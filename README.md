@@ -46,8 +46,8 @@ stellar-raise-interface/
 
 ```bash
 # Clone the repository
-git clone https://github.com/Crowdfunding-DApp/StellarRaise-Interface.git
-cd StellarRaise-Interface
+git clone https://github.com/Crowdfunding-DApp/StellarRaise-frontend.git
+cd StellarRaise-frontend
 
 # Install dependencies
 npm install
@@ -142,7 +142,7 @@ Deploying the Interface to the open web is quick and straightforward thanks to N
 The easiest way to deploy your StellarRaise app is to use the Vercel Platform.
 
 1. Log into [Vercel](https://vercel.com/new).
-2. Import your GitHub repository (`StellarRaise-Interface`).
+2. Import your GitHub repository (`StellarRaise-frontend`).
 3. Set your Framework Preset to **Next.js**.
 4. Configure any environment variables if needed (e.g., `NEXT_PUBLIC_SOROBAN_RPC_URL`).
 5. Click **Deploy**.
