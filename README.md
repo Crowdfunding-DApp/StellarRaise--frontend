@@ -1,4 +1,4 @@
-# 🚀 Stellar Raise frontend
+# 🚀 Stellar Raise Frontend
 
 ![Stellar Ecosystem](https://img.shields.io/badge/Stellar-Ecosystem-primary?logo=stellar&style=flat-square)
 ![Next.js React](https://img.shields.io/badge/Next.js-16-black?logo=next.js&style=flat-square)
