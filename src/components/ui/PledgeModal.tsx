@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,15 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
   const [pledgeAmount, setPledgeAmount] = useState<string>("100")
   const [txState, setTxState] = useState<TxState>("idle")
   const [errorMessage, setErrorMessage] = useState<string>("")
+
+  // Reset state when modal opens (isOpen transitions from false to true)
+  useEffect(() => {
+    if (isOpen) {
+      setPledgeAmount("100")
+      setTxState("idle")
+      setErrorMessage("")
+    }
+  }, [isOpen])
 
   const handlePledge = async () => {
     if (!address) {
