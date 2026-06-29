@@ -6,6 +6,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar"
 import { CountdownTimer } from "@/components/ui/CountdownTimer"
 import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
+import { RefundModal } from "@/components/ui/RefundModal"
 import { getCampaigns, type Campaign } from "@/lib/soroban"
 
 function CampaignSkeleton() {
@@ -34,6 +35,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
+  const [selectedRefundCampaign, setSelectedRefundCampaign] = useState<Campaign | null>(null)
 
   useEffect(() => {
     async function fetchCampaigns() {
@@ -62,6 +64,10 @@ export default function Home() {
 
   const closePledgeModal = () => {
     setSelectedCampaign(null)
+  }
+
+  const closeRefundModal = () => {
+    setSelectedRefundCampaign(null)
   }
 
   return (
@@ -122,22 +128,29 @@ export default function Home() {
             {campaigns.map((campaign) => {
               const progress = (campaign.raised / campaign.goal) * 100
               const isFunded = progress >= 100
+              const isFailed =
+                !isFunded && new Date(campaign.deadline) < new Date()
 
               return (
-                <div 
+                <div
                   key={campaign.id}
                   className="group flex flex-col bg-card border border-card-border rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className="relative h-48 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={campaign.image} 
-                      alt={campaign.title} 
+                    <img
+                      src={campaign.image}
+                      alt={campaign.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-3 right-3">
                       <CountdownTimer deadline={campaign.deadline} />
                     </div>
+                    {isFailed && (
+                      <div className="absolute top-3 left-3 bg-red-500/90 text-white text-xs font-semibold px-2 py-1 rounded-lg">
+                        Failed
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-6 flex-1 flex flex-col">
@@ -155,14 +168,24 @@ export default function Home() {
                         <ProgressBar progress={progress} />
                       </div>
 
-                      <Button 
-                        className="w-full font-bold" 
-                        variant={isFunded ? "secondary" : "default"}
-                        onClick={() => !isFunded && handlePledgeClick(campaign.title)}
-                        disabled={isFunded}
-                      >
-                        {isFunded ? "Successfully Funded" : "Pledge Now"}
-                      </Button>
+                      {isFailed ? (
+                        <Button
+                          className="w-full font-bold"
+                          variant="destructive"
+                          onClick={() => setSelectedRefundCampaign(campaign)}
+                        >
+                          Claim Refund
+                        </Button>
+                      ) : (
+                        <Button
+                          className="w-full font-bold"
+                          variant={isFunded ? "secondary" : "default"}
+                          onClick={() => !isFunded && handlePledgeClick(campaign.title)}
+                          disabled={isFunded}
+                        >
+                          {isFunded ? "Successfully Funded" : "Pledge Now"}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -172,10 +195,16 @@ export default function Home() {
         )}
       </main>
 
-      <PledgeModal 
-        isOpen={!!selectedCampaign} 
-        onClose={closePledgeModal} 
-        campaignTitle={selectedCampaign || ""} 
+      <PledgeModal
+        isOpen={!!selectedCampaign}
+        onClose={closePledgeModal}
+        campaignTitle={selectedCampaign || ""}
+      />
+
+      <RefundModal
+        isOpen={!!selectedRefundCampaign}
+        onClose={closeRefundModal}
+        campaignTitle={selectedRefundCampaign?.title || ""}
       />
     </div>
   )
