@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, CheckCircle2, AlertCircle, Loader2, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -24,13 +24,6 @@ export function RefundModal({
   const { address, connect } = useWallet()
   const [txState, setTxState] = useState<TxState>("idle")
   const [errorMessage, setErrorMessage] = useState<string>("")
-
-  useEffect(() => {
-    if (isOpen) {
-      setTxState("idle")
-      setErrorMessage("")
-    }
-  }, [isOpen])
 
   const handleClaimRefund = async () => {
     if (!address) {
