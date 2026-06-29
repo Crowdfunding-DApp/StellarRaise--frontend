@@ -34,6 +34,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
+  const [pledgeModalKey, setPledgeModalKey] = useState(0)
 
   useEffect(() => {
     async function fetchCampaigns() {
@@ -58,6 +59,7 @@ export default function Home() {
 
   const handlePledgeClick = (title: string) => {
     setSelectedCampaign(title)
+    setPledgeModalKey((k) => k + 1)
   }
 
   const closePledgeModal = () => {
@@ -172,10 +174,11 @@ export default function Home() {
         )}
       </main>
 
-      <PledgeModal 
-        isOpen={!!selectedCampaign} 
-        onClose={closePledgeModal} 
-        campaignTitle={selectedCampaign || ""} 
+      <PledgeModal
+        key={pledgeModalKey}
+        isOpen={!!selectedCampaign}
+        onClose={closePledgeModal}
+        campaignTitle={selectedCampaign || ""}
       />
     </div>
   )

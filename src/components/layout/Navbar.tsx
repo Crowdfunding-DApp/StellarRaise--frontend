@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Wallet, Rocket, LogOut, Loader2, Menu, X } from "lucide-react"
 import { useWallet } from "@/context/WalletContext"
@@ -25,7 +26,7 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <a
+        <Link
           href="/"
           aria-label="Stellar Raise home"
           className="flex items-center gap-2 text-xl font-bold text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
@@ -36,7 +37,7 @@ export function Navbar() {
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
             Stellar Raise
           </span>
-        </a>
+        </Link>
 
         {/* Desktop wallet controls */}
         <div className="hidden sm:flex items-center gap-4">
