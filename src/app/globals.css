@@ -16,6 +16,44 @@
     --background: #0b0c10;
     --foreground: #f3f4f6;
   }
+
+  /*
+   * RTL SUPPORT
+   *
+   * When <html dir="rtl"> is set (Arabic locale), we apply the following:
+   *
+   * 1. Font smoothing is inherited and works the same across directions.
+   * 2. Tailwind v4 + CSS logical properties (start/end, ms/me, ps/pe) handle
+   *    most layout mirroring automatically when dir="rtl" is on the html element.
+   * 3. Gradient direction adjustments: the hero gradient and logo gradient use
+   *    `bg-gradient-to-r` which means "towards inline-end". In RTL this becomes
+   *    left, which is visually reversed. We flip it here so it always reads
+   *    visually from primary → accent regardless of direction.
+   */
+  [dir="rtl"] .bg-gradient-to-r {
+    background-image: linear-gradient(to left, var(--tw-gradient-stops));
+  }
+
+  /*
+   * Tabular numerals: ensure countdown and amount numbers don't shift width
+   * as digits change, in both LTR and RTL contexts.
+   */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * Wallet address mono text: always LTR regardless of document direction.
+   * Applied via dir="ltr" on the element directly; this is just a safety note.
+   */
+
+  /*
+   * Scroll and selection colors — unchanged.
+   */
+  ::selection {
+    background-color: rgba(99, 102, 241, 0.3);
+    color: #f3f4f6;
+  }
 }
 
 body {

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useWallet } from "@/context/WalletContext"
+import { useTranslations } from "next-intl"
 
 interface PledgeModalProps {
   isOpen: boolean
@@ -16,6 +17,7 @@ type TxState = "idle" | "processing" | "success" | "error"
 
 export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps) {
   const { address, connect } = useWallet()
+  const t = useTranslations("PledgeModal")
   const [pledgeAmount, setPledgeAmount] = useState<string>("100")
   const [txState, setTxState] = useState<TxState>("idle")
   const [errorMessage, setErrorMessage] = useState<string>("")
@@ -28,7 +30,7 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
 
     if (!pledgeAmount || isNaN(Number(pledgeAmount)) || Number(pledgeAmount) <= 0) {
       setTxState("error")
-      setErrorMessage("Please enter a valid amount.")
+      setErrorMessage(t("invalid_amount"))
       return
     }
 
@@ -37,10 +39,7 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
     try {
       // Simulate Freighter transaction signing delay
       await new Promise((resolve) => setTimeout(resolve, 2500))
-
-      // Placeholder for actual simulated success
       setTxState("success")
-      
       // Reset state and close modal after success
       setTimeout(() => {
         setTxState("idle")
@@ -48,8 +47,8 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
       }, 3000)
     } catch (err) {
       setTxState("error")
-      const errorMessage = err instanceof Error ? err.message : String(err)
-      setErrorMessage(errorMessage || "Transaction failed or rejected.")
+      const msg = err instanceof Error ? err.message : String(err)
+      setErrorMessage(msg || "Transaction failed or rejected.")
     }
   }
 
@@ -80,14 +79,16 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="w-full max-w-md bg-card border border-card-border rounded-2xl shadow-2xl p-6 pointer-events-auto"
             >
+              {/* Header: justify-between is RTL-safe (start/end flip automatically) */}
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-foreground">Backing Project</h2>
+                <h2 className="text-xl font-bold text-foreground">{t("title")}</h2>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleClose}
                   disabled={txState === "processing"}
                   className="rounded-full"
+                  aria-label="Close"
                 >
                   <X className="w-5 h-5 text-foreground/60" />
                 </Button>
@@ -103,9 +104,9 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
                   >
                     <CheckCircle2 className="w-8 h-8" />
                   </motion.div>
-                  <h3 className="text-2xl font-bold mb-2">Pledge Successful!</h3>
+                  <h3 className="text-2xl font-bold mb-2">{t("success_title")}</h3>
                   <p className="text-foreground/70">
-                    You have successfully pledged to {campaignTitle}.
+                    {t("success_message", { campaign: campaignTitle })}
                   </p>
                 </div>
               ) : txState === "error" ? (
@@ -117,31 +118,35 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
                   >
                     <AlertCircle className="w-8 h-8" />
                   </motion.div>
-                  <h3 className="text-2xl font-bold mb-2">Transaction Failed</h3>
+                  <h3 className="text-2xl font-bold mb-2">{t("error_title")}</h3>
                   <p className="text-foreground/70 mb-6">{errorMessage}</p>
                   <Button variant="outline" onClick={() => setTxState("idle")} className="w-full">
-                    Try Again
+                    {t("try_again")}
                   </Button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
                   <p className="text-sm text-foreground/70">
-                    You are pledging to <span className="font-semibold text-foreground">{campaignTitle}</span>.
+                    {t("pledging_to")}{" "}
+                    <span className="font-semibold text-foreground">{campaignTitle}</span>.
                   </p>
-                  
+
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Amount to Pledge (XLM)</label>
+                    <label className="text-sm font-medium">{t("amount_label")}</label>
                     <div className="relative">
                       <input
                         type="number"
                         value={pledgeAmount}
                         onChange={(e) => setPledgeAmount(e.target.value)}
                         className="w-full bg-background border border-card-border rounded-xl px-4 py-3 text-lg font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder="100"
+                        placeholder={t("amount_placeholder")}
                         min="1"
                         disabled={txState === "processing"}
+                        // Always LTR for numeric input regardless of document direction
+                        dir="ltr"
                       />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-foreground/50">
+                      {/* XLM badge positioned at the logical end of the input */}
+                      <div className="absolute end-4 top-1/2 -translate-y-1/2 font-bold text-foreground/50 pointer-events-none">
                         XLM
                       </div>
                     </div>
@@ -155,12 +160,12 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
                     {txState === "processing" ? (
                       <span className="flex items-center gap-2">
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Confirming in Wallet...
+                        {t("confirming")}
                       </span>
                     ) : !address ? (
-                      "Connect Wallet to Pledge"
+                      t("connect_to_pledge")
                     ) : (
-                      "Confirm Pledge"
+                      t("confirm_pledge")
                     )}
                   </Button>
                 </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { useTranslations, useLocale } from "next-intl"
 import { Navbar } from "@/components/layout/Navbar"
 import { ProgressBar } from "@/components/ui/ProgressBar"
 import { CountdownTimer } from "@/components/ui/CountdownTimer"
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
 import { RefundModal } from "@/components/ui/RefundModal"
 import { getCampaigns, type Campaign } from "@/lib/soroban"
+import { formatXlm } from "@/lib/format"
 
 function CampaignSkeleton() {
   return (
@@ -31,11 +33,16 @@ function CampaignSkeleton() {
 }
 
 export default function Home() {
+  const t = useTranslations("Home")
+  const locale = useLocale()
+
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
   const [pledgeModalKey, setPledgeModalKey] = useState(0)
+  const [selectedRefundCampaign, setSelectedRefundCampaign] = useState<Campaign | null>(null)
+  const [refundModalKey, setRefundModalKey] = useState(0)
 
   useEffect(() => {
     async function fetchCampaigns() {
@@ -71,18 +78,32 @@ export default function Home() {
     setSelectedRefundCampaign(null)
   }
 
+  const retryFetch = () => {
+    setLoading(true)
+    setError(null)
+    getCampaigns()
+      .then(setCampaigns)
+      .catch((err) =>
+        setError(
+          err instanceof Error ? err.message : t("loading_error_fallback")
+        )
+      )
+      .finally(() => setLoading(false))
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      
+
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-3xl mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
-            Fund the Future on <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Stellar</span>
+            {t("hero_title")}{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+              {t("hero_title_highlight")}
+            </span>
           </h1>
-          <p className="text-lg text-foreground/70">
-            Discover and support innovative projects with lightning-fast, secure transactions on the Stellar network.
-          </p>
+          <p className="text-lg text-foreground/70">{t("hero_subtitle")}</p>
         </div>
 
         {loading && (
@@ -96,30 +117,26 @@ export default function Home() {
         {error && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-8 h-8 text-red-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-foreground mb-2">Failed to Load Campaigns</h2>
+            <h2 className="text-xl font-bold text-foreground mb-2">
+              {t("loading_error_title")}
+            </h2>
             <p className="text-foreground/60 max-w-md mb-6">{error}</p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setLoading(true)
-                setError(null)
-                getCampaigns()
-                  .then(setCampaigns)
-                  .catch((err) =>
-                    setError(
-                      err instanceof Error
-                        ? err.message
-                        : "An unexpected error occurred. Please try again later."
-                    )
-                  )
-                  .finally(() => setLoading(false))
-              }}
-            >
-              Try Again
+            <Button variant="outline" onClick={retryFetch}>
+              {t("loading_error_retry")}
             </Button>
           </div>
         )}
@@ -144,18 +161,20 @@ export default function Home() {
                       alt={campaign.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute top-3 end-3">
                       <CountdownTimer deadline={campaign.deadline} />
                     </div>
                     {isFailed && (
-                      <div className="absolute top-3 left-3 bg-red-500/90 text-white text-xs font-semibold px-2 py-1 rounded-lg">
-                        Failed
+                      <div className="absolute top-3 start-3 bg-red-500/90 text-white text-xs font-semibold px-2 py-1 rounded-lg">
+                        {t("failed_badge")}
                       </div>
                     )}
                   </div>
 
                   <div className="p-6 flex-1 flex flex-col">
-                    <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1">{campaign.title}</h3>
+                    <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1">
+                      {campaign.title}
+                    </h3>
                     <p className="text-foreground/60 text-sm mb-6 line-clamp-2 flex-1">
                       {campaign.description}
                     </p>
@@ -163,8 +182,16 @@ export default function Home() {
                     <div className="space-y-4">
                       <div>
                         <div className="flex justify-between text-sm mb-2 font-medium">
-                          <span className="text-primary">{campaign.raised.toLocaleString()} XLM raised</span>
-                          <span className="text-foreground/60">{campaign.goal.toLocaleString()} XLM goal</span>
+                          <span className="text-primary">
+                            {t("raised_label", {
+                              amount: formatXlm(campaign.raised, locale),
+                            })}
+                          </span>
+                          <span className="text-foreground/60">
+                            {t("goal_label", {
+                              amount: formatXlm(campaign.goal, locale),
+                            })}
+                          </span>
                         </div>
                         <ProgressBar progress={progress} />
                       </div>
@@ -173,18 +200,23 @@ export default function Home() {
                         <Button
                           className="w-full font-bold"
                           variant="destructive"
-                          onClick={() => { setSelectedRefundCampaign(campaign); setRefundModalKey((k) => k + 1) }}
+                          onClick={() => {
+                            setSelectedRefundCampaign(campaign)
+                            setRefundModalKey((k) => k + 1)
+                          }}
                         >
-                          Claim Refund
+                          {t("claim_refund")}
                         </Button>
                       ) : (
                         <Button
                           className="w-full font-bold"
                           variant={isFunded ? "secondary" : "default"}
-                          onClick={() => !isFunded && handlePledgeClick(campaign.title)}
+                          onClick={() =>
+                            !isFunded && handlePledgeClick(campaign.title)
+                          }
                           disabled={isFunded}
                         >
-                          {isFunded ? "Successfully Funded" : "Pledge Now"}
+                          {isFunded ? t("successfully_funded") : t("pledge_now")}
                         </Button>
                       )}
                     </div>
@@ -201,6 +233,13 @@ export default function Home() {
         isOpen={!!selectedCampaign}
         onClose={closePledgeModal}
         campaignTitle={selectedCampaign || ""}
+      />
+      <RefundModal
+        key={refundModalKey}
+        isOpen={!!selectedRefundCampaign}
+        onClose={closeRefundModal}
+        campaignTitle={selectedRefundCampaign?.title || ""}
+        pledgedAmount={selectedRefundCampaign?.raised}
       />
     </div>
   )

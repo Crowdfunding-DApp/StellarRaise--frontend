@@ -5,9 +5,12 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Wallet, Rocket, LogOut, Loader2, Menu, X } from "lucide-react"
 import { useWallet } from "@/context/WalletContext"
+import { useTranslations } from "next-intl"
+import { LocaleSwitcher } from "@/components/ui/LocaleSwitcher"
 
 export function Navbar() {
   const { address, connect, disconnect, isConnecting, error } = useWallet()
+  const t = useTranslations("Navbar")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const shortAddress = address
@@ -25,33 +28,39 @@ export function Navbar() {
       className="sticky top-0 z-50 w-full border-b border-card-border bg-background/80 backdrop-blur-md"
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
+        {/* Logo — flex row, inherits RTL direction so icon and text swap naturally */}
         <Link
           href="/"
-          aria-label="Stellar Raise home"
+          aria-label={t("logo_label")}
           className="flex items-center gap-2 text-xl font-bold text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
         >
-          <div className="bg-primary/20 p-2 rounded-xl text-primary" aria-hidden="true">
+          <div
+            className="bg-primary/20 p-2 rounded-xl text-primary"
+            aria-hidden="true"
+          >
             <Rocket className="w-5 h-5" />
           </div>
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-            Stellar Raise
+            {t("brand")}
           </span>
         </Link>
 
-        {/* Desktop wallet controls */}
+        {/* Desktop: locale switcher + wallet controls */}
         <div className="hidden sm:flex items-center gap-4">
+          <LocaleSwitcher />
+
           {error && (
             <p role="alert" aria-live="polite" className="text-red-400 text-sm">
               {error}
             </p>
           )}
+
           {address ? (
             <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
                 className="gap-2 font-mono"
-                aria-label={`Connected wallet: ${address}`}
+                aria-label={t("connected_label", { address })}
               >
                 <Wallet className="w-4 h-4" aria-hidden="true" />
                 {fullAddress}
@@ -60,7 +69,7 @@ export function Navbar() {
                 variant="ghost"
                 size="icon"
                 onClick={disconnect}
-                aria-label="Disconnect wallet"
+                aria-label={t("disconnect_label")}
               >
                 <LogOut className="w-4 h-4 text-foreground/60" aria-hidden="true" />
               </Button>
@@ -69,7 +78,7 @@ export function Navbar() {
             <Button
               onClick={connect}
               disabled={isConnecting}
-              aria-label={isConnecting ? "Connecting wallet…" : "Connect wallet"}
+              aria-label={isConnecting ? t("connecting_label") : t("connect_wallet")}
               className="gap-2 shadow-primary/30"
             >
               {isConnecting ? (
@@ -77,18 +86,20 @@ export function Navbar() {
               ) : (
                 <Wallet className="w-4 h-4" aria-hidden="true" />
               )}
-              Connect Wallet
+              {isConnecting ? t("connecting") : t("connect_wallet")}
             </Button>
           )}
         </div>
 
-        {/* Mobile: compact wallet + hamburger */}
+        {/* Mobile: locale switcher + compact wallet + hamburger */}
         <div className="flex sm:hidden items-center gap-2">
+          <LocaleSwitcher />
+
           {address ? (
             <>
               <span
                 className="font-mono text-xs text-foreground/70 bg-card border border-card-border rounded-lg px-2 py-1"
-                aria-label={`Connected wallet: ${address}`}
+                aria-label={t("connected_label", { address })}
               >
                 {shortAddress}
               </span>
@@ -96,28 +107,26 @@ export function Navbar() {
                 variant="ghost"
                 size="icon"
                 onClick={disconnect}
-                aria-label="Disconnect wallet"
+                aria-label={t("disconnect_label")}
               >
                 <LogOut className="w-4 h-4 text-foreground/60" aria-hidden="true" />
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileMenuOpen((prev) => !prev)}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={mobileMenuOpen}
-                aria-controls="mobile-menu"
-              >
-                {mobileMenuOpen ? (
-                  <X className="w-5 h-5" aria-hidden="true" />
-                ) : (
-                  <Menu className="w-5 h-5" aria-hidden="true" />
-                )}
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label={mobileMenuOpen ? t("close_menu") : t("open_menu")}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" aria-hidden="true" />
+              ) : (
+                <Menu className="w-5 h-5" aria-hidden="true" />
+              )}
+            </Button>
           )}
         </div>
       </div>
@@ -127,11 +136,15 @@ export function Navbar() {
         <div
           id="mobile-menu"
           role="region"
-          aria-label="Mobile navigation menu"
+          aria-label={t("mobile_menu_label")}
           className="sm:hidden border-t border-card-border bg-background/95 backdrop-blur-md px-4 py-4 flex flex-col gap-3"
         >
           {error && (
-            <p role="alert" aria-live="polite" className="text-red-400 text-sm text-center">
+            <p
+              role="alert"
+              aria-live="polite"
+              className="text-red-400 text-sm text-center"
+            >
               {error}
             </p>
           )}
@@ -141,7 +154,7 @@ export function Navbar() {
               setMobileMenuOpen(false)
             }}
             disabled={isConnecting}
-            aria-label={isConnecting ? "Connecting wallet…" : "Connect wallet"}
+            aria-label={isConnecting ? t("connecting_label") : t("connect_wallet")}
             className="w-full gap-2 shadow-primary/30"
           >
             {isConnecting ? (
@@ -149,7 +162,7 @@ export function Navbar() {
             ) : (
               <Wallet className="w-4 h-4" aria-hidden="true" />
             )}
-            Connect Wallet
+            {isConnecting ? t("connecting") : t("connect_wallet")}
           </Button>
         </div>
       )}
