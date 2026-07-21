@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
 import { RefundModal } from "@/components/ui/RefundModal"
 import { getCampaigns, type Campaign } from "@/lib/soroban"
+import { useWallet } from "@/context/WalletContext"
+import { useFeatureFlag } from "@/hooks/useFeatureFlag"
 
 function CampaignSkeleton() {
   return (
@@ -36,13 +38,22 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
   const [pledgeModalKey, setPledgeModalKey] = useState(0)
+  const [selectedRefundCampaign, setSelectedRefundCampaign] = useState<Campaign | null>(null)
+  const [refundModalKey, setRefundModalKey] = useState(0)
+
+  const { address: walletAddress } = useWallet()
+  const { enabled: indexerMigrationEnabled } = useFeatureFlag(
+    "indexer-migration",
+    walletAddress
+  )
 
   useEffect(() => {
     async function fetchCampaigns() {
       try {
         setLoading(true)
         setError(null)
-        const data = await getCampaigns()
+        // Pass the wallet address for consistent feature-flag bucketing
+        const data = await getCampaigns(walletAddress)
         setCampaigns(data)
       } catch (err) {
         const message =
@@ -56,7 +67,7 @@ export default function Home() {
     }
 
     fetchCampaigns()
-  }, [])
+  }, [walletAddress])
 
   const handlePledgeClick = (title: string) => {
     setSelectedCampaign(title)
@@ -195,6 +206,32 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Feature-flag indicator — shows which data path is active.
+       *  Remove this badge once the indexer-migration is fully rolled out. */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg ${
+              indexerMigrationEnabled
+                ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                : "bg-gray-500/20 text-gray-400 border border-gray-500/30"
+            }`}
+            title={
+              indexerMigrationEnabled
+                ? "Using indexer endpoint (Issue 49)"
+                : "Using legacy RPC simulateTransaction"
+            }
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                indexerMigrationEnabled ? "bg-green-400" : "bg-gray-400"
+              }`}
+            />
+            {indexerMigrationEnabled ? "Indexer" : "Legacy RPC"}
+          </span>
+        </div>
+      )}
 
       <PledgeModal
         key={pledgeModalKey}
