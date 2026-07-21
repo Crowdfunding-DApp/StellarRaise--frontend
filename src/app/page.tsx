@@ -7,6 +7,7 @@ import { CountdownTimer } from "@/components/ui/CountdownTimer"
 import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
 import { RefundModal } from "@/components/ui/RefundModal"
+import { VirtualizedCampaignGrid } from "@/components/VirtualizedCampaignGrid"
 import { getCampaigns, type Campaign } from "@/lib/soroban"
 
 function CampaignSkeleton() {
@@ -36,6 +37,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
   const [pledgeModalKey, setPledgeModalKey] = useState(0)
+  const [selectedRefundCampaign, setSelectedRefundCampaign] = useState<{ title: string; pledgedAmount?: number } | null>(null)
+  const [refundModalKey, setRefundModalKey] = useState(0)
 
   useEffect(() => {
     async function fetchCampaigns() {
@@ -71,29 +74,106 @@ export default function Home() {
     setSelectedRefundCampaign(null)
   }
 
+  const renderCampaignCard = (campaign: Campaign) => {
+    const progress = (campaign.raised / campaign.goal) * 100
+    const isFunded = progress >= 100
+    const isFailed = !isFunded && new Date(campaign.deadline) < new Date()
+
+    return (
+      <div
+        className="group flex flex-col bg-card border border-card-border rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 transform hover:-translate-y-1"
+      >
+        <div className="relative h-48 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={campaign.image}
+            alt={campaign.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="absolute top-3 right-3">
+            <CountdownTimer deadline={campaign.deadline} />
+          </div>
+          {isFailed && (
+            <div className="absolute top-3 left-3 bg-red-500/90 text-white text-xs font-semibold px-2 py-1 rounded-lg">
+              Failed
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 flex-1 flex flex-col">
+          <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1">{campaign.title}</h3>
+          <p className="text-foreground/60 text-sm mb-6 line-clamp-2 flex-1">
+            {campaign.description}
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between text-sm mb-2 font-medium">
+                <span className="text-primary">{campaign.raised.toLocaleString()} XLM raised</span>
+                <span className="text-foreground/60">{campaign.goal.toLocaleString()} XLM goal</span>
+              </div>
+              <ProgressBar progress={progress} />
+            </div>
+
+            {isFailed ? (
+              <Button
+                className="w-full font-bold"
+                variant="destructive"
+                onClick={() => {
+                  setSelectedRefundCampaign({ title: campaign.title, pledgedAmount: campaign.raised })
+                  setRefundModalKey((k) => k + 1)
+                }}
+              >
+                Claim Refund
+              </Button>
+            ) : (
+              <Button
+                className="w-full font-bold"
+                variant={isFunded ? "secondary" : "default"}
+                onClick={() => !isFunded && handlePledgeClick(campaign.title)}
+                disabled={isFunded}
+              >
+                {isFunded ? "Successfully Funded" : "Pledge Now"}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      
-      <main className="flex-1 container mx-auto px-4 py-12">
-        <div className="max-w-3xl mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
-            Fund the Future on <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Stellar</span>
-          </h1>
-          <p className="text-lg text-foreground/70">
-            Discover and support innovative projects with lightning-fast, secure transactions on the Stellar network.
-          </p>
-        </div>
 
-        {loading && (
+      {loading && (
+        <main className="flex-1 container mx-auto px-4 py-12">
+          <div className="max-w-3xl mb-12">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
+              Fund the Future on <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Stellar</span>
+            </h1>
+            <p className="text-lg text-foreground/70">
+              Discover and support innovative projects with lightning-fast, secure transactions on the Stellar network.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <CampaignSkeleton />
             <CampaignSkeleton />
             <CampaignSkeleton />
           </div>
-        )}
+        </main>
+      )}
 
-        {error && (
+      {error && (
+        <main className="flex-1 container mx-auto px-4 py-12">
+          <div className="max-w-3xl mb-12">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
+              Fund the Future on <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Stellar</span>
+            </h1>
+            <p className="text-lg text-foreground/70">
+              Discover and support innovative projects with lightning-fast, secure transactions on the Stellar network.
+            </p>
+          </div>
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
               <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -122,85 +202,46 @@ export default function Home() {
               Try Again
             </Button>
           </div>
-        )}
+        </main>
+      )}
 
-        {!loading && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {campaigns.map((campaign) => {
-              const progress = (campaign.raised / campaign.goal) * 100
-              const isFunded = progress >= 100
-              const isFailed =
-                !isFunded && new Date(campaign.deadline) < new Date()
-
-              return (
-                <div
-                  key={campaign.id}
-                  className="group flex flex-col bg-card border border-card-border rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 transform hover:-translate-y-1"
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={campaign.image}
-                      alt={campaign.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute top-3 right-3">
-                      <CountdownTimer deadline={campaign.deadline} />
-                    </div>
-                    {isFailed && (
-                      <div className="absolute top-3 left-3 bg-red-500/90 text-white text-xs font-semibold px-2 py-1 rounded-lg">
-                        Failed
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-6 flex-1 flex flex-col">
-                    <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1">{campaign.title}</h3>
-                    <p className="text-foreground/60 text-sm mb-6 line-clamp-2 flex-1">
-                      {campaign.description}
-                    </p>
-
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between text-sm mb-2 font-medium">
-                          <span className="text-primary">{campaign.raised.toLocaleString()} XLM raised</span>
-                          <span className="text-foreground/60">{campaign.goal.toLocaleString()} XLM goal</span>
-                        </div>
-                        <ProgressBar progress={progress} />
-                      </div>
-
-                      {isFailed ? (
-                        <Button
-                          className="w-full font-bold"
-                          variant="destructive"
-                          onClick={() => { setSelectedRefundCampaign(campaign); setRefundModalKey((k) => k + 1) }}
-                        >
-                          Claim Refund
-                        </Button>
-                      ) : (
-                        <Button
-                          className="w-full font-bold"
-                          variant={isFunded ? "secondary" : "default"}
-                          onClick={() => !isFunded && handlePledgeClick(campaign.title)}
-                          disabled={isFunded}
-                        >
-                          {isFunded ? "Successfully Funded" : "Pledge Now"}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+      {!loading && !error && (
+        <>
+          <div className="px-4 py-8 container mx-auto max-w-7xl">
+            <div className="max-w-3xl mb-8">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
+                Fund the Future on <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Stellar</span>
+              </h1>
+              <p className="text-lg text-foreground/70">
+                Discover and support innovative projects with lightning-fast, secure transactions on the Stellar network.
+              </p>
+            </div>
           </div>
-        )}
-      </main>
+          <div className="flex-1">
+            <VirtualizedCampaignGrid
+              campaigns={campaigns}
+              renderCard={renderCampaignCard}
+              columnCount={3}
+              gap={32}
+              overscan={2}
+            />
+          </div>
+        </>
+      )}
 
       <PledgeModal
         key={pledgeModalKey}
         isOpen={!!selectedCampaign}
         onClose={closePledgeModal}
         campaignTitle={selectedCampaign || ""}
+      />
+
+      <RefundModal
+        key={refundModalKey}
+        isOpen={!!selectedRefundCampaign}
+        onClose={closeRefundModal}
+        campaignTitle={selectedRefundCampaign?.title || ""}
+        pledgedAmount={selectedRefundCampaign?.pledgedAmount}
       />
     </div>
   )
