@@ -20,7 +20,7 @@ Thank you for your interest in contributing to StellarRaise! Please read this gu
 
 StellarRaise runs **The Wave Program** — a structured contributor workflow tied directly to the Issues board.
 
-- Browse open, labelled issues at the [Issues board](https://github.com/Crowdfunding-DApp/StellarRaise--frontend/issues).
+- Browse open, labelled issues at the [Issues board](https://github.com/Crowdfunding-DApp/StellarRaise-frontend/issues).
 - Issues are tagged (`bug`, `feature`, `soroban`, `good-first-issue`, etc.) — pick one that matches your skill level.
 - Read the [Wave Program Strategy Document](./wave-program-strategy.md) before claiming an issue.
 - Leave a comment on the issue to indicate you are working on it before you open a branch.
@@ -31,8 +31,8 @@ StellarRaise runs **The Wave Program** — a structured contributor workflow tie
 
 ```bash
 # 1. Fork the repository on GitHub, then clone your fork
-git clone https://github.com/<your-username>/StellarRaise--frontend.git
-cd StellarRaise--frontend
+git clone https://github.com/<your-username>/StellarRaise-frontend.git
+cd StellarRaise-frontend
 
 # 2. Install dependencies (Node.js v20+ required)
 npm install
