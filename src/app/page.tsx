@@ -7,6 +7,7 @@ import { CountdownTimer } from "@/components/ui/CountdownTimer"
 import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
 import { RefundModal } from "@/components/ui/RefundModal"
+import { NotificationDock } from "@/components/ui/NotificationDock"
 import { getCampaigns, type Campaign } from "@/lib/soroban"
 
 function CampaignSkeleton() {
@@ -36,6 +37,11 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
   const [pledgeModalKey, setPledgeModalKey] = useState(0)
+  // Pre-existing state hooks for the refund modal flow; declared to keep TS
+  // green (see PR description for the minimal precond fix).
+  const [selectedRefundCampaign, setSelectedRefundCampaign] =
+    useState<Campaign | null>(null)
+  const [refundModalKey, setRefundModalKey] = useState(0)
 
   useEffect(() => {
     async function fetchCampaigns() {
@@ -76,6 +82,8 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1 container mx-auto px-4 py-12">
+        {/* Issue #78: surface the opt-in once the wallet connects. */}
+        <NotificationDock campaigns={campaigns} />
         <div className="max-w-3xl mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
             Fund the Future on <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Stellar</span>

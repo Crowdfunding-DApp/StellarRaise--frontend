@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import { WalletProvider } from "@/context/WalletContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -24,7 +25,9 @@ export default function RootLayout({
         className={`${outfit.variable} antialiased font-sans`}
       >
         <WalletProvider>
-          {children}
+          <NotificationProvider>
+            {children}
+          </NotificationProvider>
         </WalletProvider>
       </body>
     </html>
