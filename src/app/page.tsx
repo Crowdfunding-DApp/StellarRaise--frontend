@@ -36,6 +36,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
   const [pledgeModalKey, setPledgeModalKey] = useState(0)
+  const [selectedRefundCampaign, setSelectedRefundCampaign] =
+    useState<Campaign | null>(null)
+  const [refundModalKey, setRefundModalKey] = useState(0)
 
   useEffect(() => {
     async function fetchCampaigns() {
@@ -173,7 +176,10 @@ export default function Home() {
                         <Button
                           className="w-full font-bold"
                           variant="destructive"
-                          onClick={() => { setSelectedRefundCampaign(campaign); setRefundModalKey((k) => k + 1) }}
+                          onClick={() => {
+                            setSelectedRefundCampaign(campaign)
+                            setRefundModalKey((k) => k + 1)
+                          }}
                         >
                           Claim Refund
                         </Button>
@@ -201,6 +207,13 @@ export default function Home() {
         isOpen={!!selectedCampaign}
         onClose={closePledgeModal}
         campaignTitle={selectedCampaign || ""}
+      />
+      <RefundModal
+        key={refundModalKey}
+        isOpen={!!selectedRefundCampaign}
+        onClose={closeRefundModal}
+        campaignTitle={selectedRefundCampaign?.title ?? ""}
+        pledgedAmount={undefined}
       />
     </div>
   )

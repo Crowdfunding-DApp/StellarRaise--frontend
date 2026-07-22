@@ -13,12 +13,13 @@ The Stellar Raise Interface lets backers discover and support innovative project
 
 ### Key Features
 
-| Feature                 | Description                                                                 |
-| :---------------------- | :-------------------------------------------------------------------------- |
+| Feature                   | Description                                                                 |
+| :------------------------ | :-------------------------------------------------------------------------- |
 | **Freighter Integration** | Seamless authentication, connection, and transaction signing via Freighter  |
 | **Campaign Dashboard**    | View live projects with progress bars, countdown timers, and goal tracking  |
 | **Pledge Interface**      | Intuitive modal UI to safely pledge XLM or custom assets to campaigns       |
 | **Modern UI/UX**          | Fast, responsive design built with Tailwind CSS, Radix UI, and Framer Motion|
+| **Creator Analytics**     | Owner-only analytics with wallet signature-challenge authentication (Issue #77) |
 
 ## Project Structure
 
@@ -132,6 +133,108 @@ const handlePledge = async (amount: number) => {
   }
 }
 ```
+
+## Creator Analytics Dashboard (Issue #77)
+
+The dashboard is an **owner-only** view of campaign performance, available
+at `/dashboard`. It restricts access to the verified Stellar wallet that
+owns a given campaign.
+
+### Pages
+
+| Path                          | Purpose                                                  |
+| :---------------------------- | :------------------------------------------------------- |
+| `/dashboard`                  | Lists every campaign owned by the authenticated wallet   |
+| `/dashboard/[campaignId]`     | Per-campaign analytics: velocity, funding series, backers, referrals, scoped funnel metrics |
+
+A subtle **Dashboard** link is rendered in the top navbar whenever a
+wallet is connected.
+
+### Owner authentication flow
+
+1. **Connect wallet** — the existing `useWallet()` context prompts Freighter.
+2. **Challenge** — `POST /api/auth/challenge { address }` returns a
+   one-time ed25519 `challenge.message` containing a 32-char hex nonce,
+   the wallet address, an ISO timestamp, and a TTL (5 minutes default).
+   The challenge is stored server-side keyed by address and is consumed
+   on first verification attempt.
+3. **Signature** — the client signs `challenge.message` with Freighter:
+   ```typescript
+   const signed = await freighter.signMessage(message, { network: "TESTNET" })
+   ```
+4. **Verify** — `POST /api/auth/verify { address, signature }` verifies
+   the ed25519 signature via `@stellar/stellar-sdk` →
+   `Keypair.fromPublicKey(address).verify(Buffer.from(challenge.nonce), Buffer.from(signature, "base64"))`.
+   On success it issues an HttpOnly HMAC-signed session cookie
+   (`sr_owner_session`) bound to `OWNER_SESSION_SECRET` containing
+   `{ address, exp }`.
+
+Every analytics endpoint re-checks the cookie's HMAC and signature with
+`getCurrentOwnerAddress()` before serving data.
+
+### Security guarantees
+
+- **No cross-owner leakage.** `GET /api/analytics/[campaignId]` returns
+  401 if the cookie session is missing, 403 if the session wallet doesn’t
+  match the campaign’s declared owner, and 404 if the campaign id is not
+  in the ownership registry.
+- **Replay-resistant.** Each challenge is consumed on first verify
+  attempt, regardless of outcome. TTL is 5 minutes.
+- **Tamper-resistant session.** The cookie is an HMAC-SHA256 of its
+  base64url JSON body. Tampered cookies fail verification in constant
+  time (`crypto.timingSafeEqual`).
+- **No transaction broadcast.** The owner flow only signs an off-chain
+  message via `freighter.signMessage`. No Soroban transaction is ever
+  sent.
+
+### Supported v1 analytics
+
+Returned by `GET /api/analytics/[campaignId]` under `data.v1`:
+
+- **Live (Soroban contract)**: `raised`, `goal`, `deadline`.
+- **Mock-indexed (deterministic placeholder)**: `fundingVelocityXlmPerDay`,
+  `fundingOverTime[]`, `uniqueBackers`, `totalPledges`,
+  `referralBreakdown[]`.
+
+The mock layer is deterministic per `campaignId` so refreshes and tests
+are stable. Once a Soroban event indexer is wired in (Issue #67 follow-up),
+only the producer in `src/lib/server/analytics-provider.ts` needs to
+change.
+
+### Out-of-scope funnel metrics
+
+The following funnel metrics are returned with `available: false` and a
+human-readable `reason` so the dashboard can render explicit "Coming
+soon" placeholders:
+
+- **Page views**
+- **Click-through rate**
+- **Conversion rate**
+- **Impressions to backer ratio**
+
+These require front-end impression tracking, which is not implemented
+in v1. They will be enabled when the Issue #67 indexer exposes pageview
+/ click events.
+
+### Running the dashboard locally
+
+```bash
+npm install            # adds vitest + @testing-library + happy-dom
+npm run test           # runs unit + component tests
+npm run typecheck      # tsc --noEmit
+npm run build          # production build
+```
+
+Set `OWNER_SESSION_SECRET` in production to harden cookie signing (a
+per-process ephemeral secret is used in dev).
+
+### Demo ownership registry
+
+The campaign → owner map lives in `src/lib/server/ownership.ts`. In
+production it must be replaced with a lookup against the on-chain owner
+field of the Soroban campaign contract. Until the contract exposes that
+field, this map is the authoritative source of truth — and is consulted
+**server-side** only, never exposed to the client.
 
 ## Deployment
 

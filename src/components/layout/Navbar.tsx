@@ -3,7 +3,15 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Wallet, Rocket, LogOut, Loader2, Menu, X } from "lucide-react"
+import {
+  Wallet,
+  Rocket,
+  LogOut,
+  Loader2,
+  Menu,
+  X,
+  BarChart3,
+} from "lucide-react"
 import { useWallet } from "@/context/WalletContext"
 
 export function Navbar() {
@@ -41,6 +49,16 @@ export function Navbar() {
 
         {/* Desktop wallet controls */}
         <div className="hidden sm:flex items-center gap-4">
+          {address ? (
+            <Link
+              href="/dashboard"
+              aria-label="Open creator analytics dashboard"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-lg hover:bg-card focus:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center gap-2 transition-colors"
+            >
+              <BarChart3 className="w-4 h-4 text-primary" aria-hidden="true" />
+              Dashboard
+            </Link>
+          ) : null}
           {error && (
             <p role="alert" aria-live="polite" className="text-red-400 text-sm">
               {error}
@@ -84,6 +102,16 @@ export function Navbar() {
 
         {/* Mobile: compact wallet + hamburger */}
         <div className="flex sm:hidden items-center gap-2">
+          {address ? (
+            <Link
+              href="/dashboard"
+              aria-label="Open creator analytics dashboard"
+              className="text-xs font-medium text-foreground/80 hover:text-foreground px-2 py-1 rounded-md hover:bg-card inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+              Dashboard
+            </Link>
+          ) : null}
           {address ? (
             <>
               <span
