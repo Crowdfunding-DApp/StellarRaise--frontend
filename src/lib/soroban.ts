@@ -14,6 +14,12 @@ export interface Campaign {
   goal: number
   deadline: string
   image: string
+  /** Owner's Stellar address. Not yet returned by the deployed contract. */
+  owner?: string
+  /** ISO timestamp of when the campaign reached its goal, used to gate a dispute grace period (Issue 34). Not yet returned by the deployed contract. */
+  fundedAt?: string
+  /** Cumulative amount the owner has withdrawn so far. Not yet tracked on-chain. */
+  withdrawnAmount?: number
 }
 
 function getRpcUrl(): string {
@@ -43,6 +49,9 @@ interface RawCampaign {
   goal: number
   deadline: number
   image: string
+  owner?: string
+  fundedAt?: number
+  withdrawnAmount?: number
 }
 
 /**
@@ -127,6 +136,9 @@ export async function getCampaigns(): Promise<Campaign[]> {
     goal: Number(raw.goal),
     deadline: new Date(Number(raw.deadline) * 1000).toISOString(),
     image: raw.image || "",
+    owner: raw.owner,
+    fundedAt: raw.fundedAt ? new Date(Number(raw.fundedAt) * 1000).toISOString() : undefined,
+    withdrawnAmount: raw.withdrawnAmount ? Number(raw.withdrawnAmount) : 0,
   }))
 
   return campaigns

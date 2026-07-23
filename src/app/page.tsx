@@ -7,7 +7,15 @@ import { CountdownTimer } from "@/components/ui/CountdownTimer"
 import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
 import { RefundModal } from "@/components/ui/RefundModal"
+import { WithdrawModal } from "@/components/ui/WithdrawModal"
 import { getCampaigns, type Campaign } from "@/lib/soroban"
+import { useWallet } from "@/context/WalletContext"
+import {
+  getRemainingBalance,
+  getWithdrawalState,
+  isWithinGracePeriod,
+  getGracePeriodEndsAt,
+} from "@/lib/withdrawal"
 
 function CampaignSkeleton() {
   return (
@@ -38,6 +46,9 @@ export default function Home() {
   const [pledgeModalKey, setPledgeModalKey] = useState(0)
   const [selectedRefundCampaign, setSelectedRefundCampaign] = useState<Campaign | null>(null)
   const [refundModalKey, setRefundModalKey] = useState(0)
+  const [selectedWithdrawCampaign, setSelectedWithdrawCampaign] = useState<Campaign | null>(null)
+  const [withdrawModalKey, setWithdrawModalKey] = useState(0)
+  const { address } = useWallet()
 
   useEffect(() => {
     async function fetchCampaigns() {
@@ -71,6 +82,20 @@ export default function Home() {
 
   const closeRefundModal = () => {
     setSelectedRefundCampaign(null)
+  }
+
+  const closeWithdrawModal = () => {
+    setSelectedWithdrawCampaign(null)
+  }
+
+  const handleWithdrawSuccess = (campaignId: string, amount: number) => {
+    setCampaigns((prev) =>
+      prev.map((c) =>
+        c.id === campaignId
+          ? { ...c, withdrawnAmount: (c.withdrawnAmount ?? 0) + amount }
+          : c
+      )
+    )
   }
 
   return (
@@ -134,6 +159,15 @@ export default function Home() {
               const isFailed =
                 !isFunded && new Date(campaign.deadline) < new Date()
 
+              // Owner not yet returned by the contract (see Campaign.owner) —
+              // fall back to treating the connected wallet as owner so the
+              // withdrawal flow is testable ahead of that contract support.
+              const isOwner = campaign.owner ? address === campaign.owner : !!address
+              const remainingBalance = getRemainingBalance(campaign)
+              const withdrawalState = getWithdrawalState(campaign)
+              const gracePeriodActive = isWithinGracePeriod(campaign)
+              const graceEndsAt = getGracePeriodEndsAt(campaign)
+
               return (
                 <div
                   key={campaign.id}
@@ -179,14 +213,56 @@ export default function Home() {
                         >
                           Claim Refund
                         </Button>
+                      ) : isFunded ? (
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-foreground/60">Withdrawal status</span>
+                            <span
+                              className={
+                                withdrawalState === "full"
+                                  ? "text-green-500 font-semibold"
+                                  : withdrawalState === "partial"
+                                  ? "text-primary font-semibold"
+                                  : "text-foreground/60 font-semibold"
+                              }
+                            >
+                              {withdrawalState === "full"
+                                ? "Fully withdrawn"
+                                : withdrawalState === "partial"
+                                ? `Partially withdrawn (${(campaign.withdrawnAmount ?? 0).toLocaleString()} of ${campaign.raised.toLocaleString()} XLM)`
+                                : "Not withdrawn"}
+                            </span>
+                          </div>
+
+                          {isOwner ? (
+                            <Button
+                              className="w-full font-bold"
+                              variant={withdrawalState === "full" ? "secondary" : "default"}
+                              disabled={withdrawalState === "full" || gracePeriodActive || remainingBalance <= 0}
+                              onClick={() => {
+                                setSelectedWithdrawCampaign(campaign)
+                                setWithdrawModalKey((k) => k + 1)
+                              }}
+                            >
+                              {withdrawalState === "full"
+                                ? "Fully Withdrawn"
+                                : gracePeriodActive
+                                ? `Withdrawal opens ${graceEndsAt ? new Date(graceEndsAt).toLocaleString() : "soon"}`
+                                : "Withdraw Funds"}
+                            </Button>
+                          ) : (
+                            <Button className="w-full font-bold" variant="secondary" disabled>
+                              Successfully Funded
+                            </Button>
+                          )}
+                        </div>
                       ) : (
                         <Button
                           className="w-full font-bold"
-                          variant={isFunded ? "secondary" : "default"}
-                          onClick={() => !isFunded && handlePledgeClick(campaign.title)}
-                          disabled={isFunded}
+                          variant="default"
+                          onClick={() => handlePledgeClick(campaign.title)}
                         >
-                          {isFunded ? "Successfully Funded" : "Pledge Now"}
+                          Pledge Now
                         </Button>
                       )}
                     </div>
@@ -211,6 +287,19 @@ export default function Home() {
         onClose={closeRefundModal}
         campaignTitle={selectedRefundCampaign?.title || ""}
         pledgedAmount={selectedRefundCampaign?.raised}
+      />
+
+      <WithdrawModal
+        key={withdrawModalKey}
+        isOpen={!!selectedWithdrawCampaign}
+        onClose={closeWithdrawModal}
+        campaignTitle={selectedWithdrawCampaign?.title || ""}
+        remainingBalance={selectedWithdrawCampaign ? getRemainingBalance(selectedWithdrawCampaign) : 0}
+        onWithdrawSuccess={(amount) => {
+          if (selectedWithdrawCampaign) {
+            handleWithdrawSuccess(selectedWithdrawCampaign.id, amount)
+          }
+        }}
       />
     </div>
   )
