@@ -5,10 +5,24 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Wallet, Rocket, LogOut, Loader2, Menu, X } from "lucide-react"
 import { useWallet } from "@/context/WalletContext"
+import { MobileConnectModal } from "@/components/ui/MobileConnectModal"
 
 export function Navbar() {
-  const { address, connect, disconnect, isConnecting, error } = useWallet()
+  const { address, connect, disconnect, isConnecting, error, isMobile, extensionAvailable } = useWallet()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileConnectOpen, setMobileConnectOpen] = useState(false)
+
+  // On mobile without an extension, Freighter's connect() is a dead end
+  // (it just throws "not installed"), so route to the QR/deep-link flow.
+  const needsMobileFallback = isMobile && extensionAvailable === false
+
+  const handleConnectClick = () => {
+    if (needsMobileFallback) {
+      setMobileConnectOpen(true)
+    } else {
+      connect()
+    }
+  }
 
   const shortAddress = address
     ? `${address.substring(0, 4)}…${address.substring(address.length - 4)}`
@@ -67,7 +81,7 @@ export function Navbar() {
             </div>
           ) : (
             <Button
-              onClick={connect}
+              onClick={handleConnectClick}
               disabled={isConnecting}
               aria-label={isConnecting ? "Connecting wallet…" : "Connect wallet"}
               className="gap-2 shadow-primary/30"
@@ -137,7 +151,7 @@ export function Navbar() {
           )}
           <Button
             onClick={() => {
-              connect()
+              handleConnectClick()
               setMobileMenuOpen(false)
             }}
             disabled={isConnecting}
@@ -153,6 +167,8 @@ export function Navbar() {
           </Button>
         </div>
       )}
+
+      <MobileConnectModal isOpen={mobileConnectOpen} onClose={() => setMobileConnectOpen(false)} />
     </nav>
   )
 }
