@@ -2,9 +2,10 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Wallet, Rocket, LogOut, Loader2, Menu, X } from "lucide-react"
 import { useWallet } from "@/context/WalletContext"
+import { cn } from "@/lib/utils"
 
 export function Navbar() {
   const { address, connect, disconnect, isConnecting, error } = useWallet()
@@ -48,14 +49,16 @@ export function Navbar() {
           )}
           {address ? (
             <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                className="gap-2 font-mono"
+              {/* Static display, not an actionable control — a real <button>
+                  here with no onClick would be a focusable dead end for
+                  keyboard/screen-reader users. */}
+              <span
+                className={cn(buttonVariants({ variant: "secondary" }), "gap-2 font-mono cursor-default")}
                 aria-label={`Connected wallet: ${address}`}
               >
                 <Wallet className="w-4 h-4" aria-hidden="true" />
                 {fullAddress}
-              </Button>
+              </span>
               <Button
                 variant="ghost"
                 size="icon"
