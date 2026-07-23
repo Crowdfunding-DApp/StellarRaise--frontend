@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check-bundle-size": "next build && node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

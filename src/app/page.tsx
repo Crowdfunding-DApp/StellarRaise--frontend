@@ -7,7 +7,16 @@ import { CountdownTimer } from "@/components/ui/CountdownTimer"
 import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
 import { RefundModal } from "@/components/ui/RefundModal"
-import { getCampaigns, type Campaign } from "@/lib/soroban"
+import type { Campaign } from "@/lib/soroban"
+
+// @stellar/stellar-sdk is a large dependency only needed once we actually
+// fetch campaigns — dynamic import keeps it out of the initial JS bundle
+// instead of shipping it on every page load regardless of whether the
+// contract call ever happens.
+async function loadCampaigns(): Promise<Campaign[]> {
+  const { getCampaigns } = await import("@/lib/soroban")
+  return getCampaigns()
+}
 
 function CampaignSkeleton() {
   return (
@@ -36,13 +45,15 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
   const [pledgeModalKey, setPledgeModalKey] = useState(0)
+  const [selectedRefundCampaign, setSelectedRefundCampaign] = useState<Campaign | null>(null)
+  const [refundModalKey, setRefundModalKey] = useState(0)
 
   useEffect(() => {
     async function fetchCampaigns() {
       try {
         setLoading(true)
         setError(null)
-        const data = await getCampaigns()
+        const data = await loadCampaigns()
         setCampaigns(data)
       } catch (err) {
         const message =
@@ -107,7 +118,7 @@ export default function Home() {
               onClick={() => {
                 setLoading(true)
                 setError(null)
-                getCampaigns()
+                loadCampaigns()
                   .then(setCampaigns)
                   .catch((err) =>
                     setError(
@@ -201,6 +212,13 @@ export default function Home() {
         isOpen={!!selectedCampaign}
         onClose={closePledgeModal}
         campaignTitle={selectedCampaign || ""}
+      />
+
+      <RefundModal
+        key={refundModalKey}
+        isOpen={!!selectedRefundCampaign}
+        onClose={closeRefundModal}
+        campaignTitle={selectedRefundCampaign?.title || ""}
       />
     </div>
   )
