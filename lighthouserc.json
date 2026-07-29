@@ -2,8 +2,8 @@
   "ci": {
     "collect": {
       "url": [
-        "http://localhost:3000/en",
-        "http://localhost:3000/ar"
+        "http://localhost:3000/ar",
+        "http://localhost:3000/en"
       ],
       "numberOfRuns": 3,
       "settings": {
