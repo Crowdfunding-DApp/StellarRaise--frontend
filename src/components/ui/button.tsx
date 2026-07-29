@@ -9,15 +9,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/20",
+        // bg-primary (#6366f1) only gives white text a 4.47:1 ratio, just
+        // under the 4.5:1 AA minimum for normal-size text — use the darker
+        // tokens so button labels are reliably AA-compliant.
+        default: "bg-primary-hover text-white hover:bg-primary-active shadow-lg shadow-primary/20",
         destructive:
-          "bg-red-500 text-slate-50 hover:bg-red-500/90",
+          "bg-red-600 text-white hover:bg-red-700",
         outline:
           "border border-card-border bg-background hover:bg-card text-foreground",
         secondary:
           "bg-card text-foreground hover:bg-card-border",
         ghost: "hover:bg-card hover:text-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-primary-300 underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",

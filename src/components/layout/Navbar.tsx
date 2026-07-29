@@ -3,12 +3,27 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { Wallet, Rocket, LogOut, Loader2, Menu, X } from "lucide-react"
 import { useWallet } from "@/context/WalletContext"
+import { cn } from "@/lib/utils"
 
 export function Navbar() {
-  const { address, connect, disconnect, isConnecting, error } = useWallet()
+  const { address, connect, disconnect, isConnecting, error, isMobile, extensionAvailable } = useWallet()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileConnectOpen, setMobileConnectOpen] = useState(false)
+
+  // On mobile without an extension, Freighter's connect() is a dead end
+  // (it just throws "not installed"), so route to the QR/deep-link flow.
+  const needsMobileFallback = isMobile && extensionAvailable === false
+
+  const handleConnectClick = () => {
+    if (needsMobileFallback) {
+      setMobileConnectOpen(true)
+    } else {
+      connect()
+    }
+  }
 
   const shortAddress = address
     ? `${address.substring(0, 4)}…${address.substring(address.length - 4)}`
@@ -39,23 +54,27 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop wallet controls */}
-        <div className="hidden sm:flex items-center gap-4">
+        {/* Desktop: theme toggle + wallet controls */}
+        <div className="hidden sm:flex items-center gap-3">
+          <ThemeToggle />
+
           {error && (
-            <p role="alert" aria-live="polite" className="text-red-400 text-sm">
+            <p role="alert" aria-live="polite" className="text-red-500 text-sm">
               {error}
             </p>
           )}
           {address ? (
             <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                className="gap-2 font-mono"
+              {/* Static display, not an actionable control — a real <button>
+                  here with no onClick would be a focusable dead end for
+                  keyboard/screen-reader users. */}
+              <span
+                className={cn(buttonVariants({ variant: "secondary" }), "gap-2 font-mono cursor-default")}
                 aria-label={`Connected wallet: ${address}`}
               >
                 <Wallet className="w-4 h-4" aria-hidden="true" />
                 {fullAddress}
-              </Button>
+              </span>
               <Button
                 variant="ghost"
                 size="icon"
@@ -67,7 +86,7 @@ export function Navbar() {
             </div>
           ) : (
             <Button
-              onClick={connect}
+              onClick={handleConnectClick}
               disabled={isConnecting}
               aria-label={isConnecting ? "Connecting wallet…" : "Connect wallet"}
               className="gap-2 shadow-primary/30"
@@ -82,8 +101,20 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile: compact wallet + hamburger */}
-        <div className="flex sm:hidden items-center gap-2">
+        {/* Mobile: theme toggle + compact wallet + hamburger */}
+        <div className="flex sm:hidden items-center gap-1">
+          <ThemeToggle />
+
+          {address ? (
+            <Link
+              href="/dashboard"
+              aria-label="Open creator analytics dashboard"
+              className="text-xs font-medium text-foreground/80 hover:text-foreground px-2 py-1 rounded-md hover:bg-card inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+              Dashboard
+            </Link>
+          ) : null}
           {address ? (
             <>
               <span
@@ -102,22 +133,20 @@ export function Navbar() {
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileMenuOpen((prev) => !prev)}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={mobileMenuOpen}
-                aria-controls="mobile-menu"
-              >
-                {mobileMenuOpen ? (
-                  <X className="w-5 h-5" aria-hidden="true" />
-                ) : (
-                  <Menu className="w-5 h-5" aria-hidden="true" />
-                )}
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" aria-hidden="true" />
+              ) : (
+                <Menu className="w-5 h-5" aria-hidden="true" />
+              )}
+            </Button>
           )}
         </div>
       </div>
@@ -131,13 +160,13 @@ export function Navbar() {
           className="sm:hidden border-t border-card-border bg-background/95 backdrop-blur-md px-4 py-4 flex flex-col gap-3"
         >
           {error && (
-            <p role="alert" aria-live="polite" className="text-red-400 text-sm text-center">
+            <p role="alert" aria-live="polite" className="text-red-500 text-sm text-center">
               {error}
             </p>
           )}
           <Button
             onClick={() => {
-              connect()
+              handleConnectClick()
               setMobileMenuOpen(false)
             }}
             disabled={isConnecting}
@@ -153,6 +182,8 @@ export function Navbar() {
           </Button>
         </div>
       )}
+
+      <MobileConnectModal isOpen={mobileConnectOpen} onClose={() => setMobileConnectOpen(false)} />
     </nav>
   )
 }
