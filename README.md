@@ -13,12 +13,13 @@ The Stellar Raise Interface lets backers discover and support innovative project
 
 ### Key Features
 
-| Feature                 | Description                                                                 |
-| :---------------------- | :-------------------------------------------------------------------------- |
+| Feature                   | Description                                                                 |
+| :------------------------ | :-------------------------------------------------------------------------- |
 | **Freighter Integration** | Seamless authentication, connection, and transaction signing via Freighter  |
 | **Campaign Dashboard**    | View live projects with progress bars, countdown timers, and goal tracking  |
 | **Pledge Interface**      | Intuitive modal UI to safely pledge XLM or custom assets to campaigns       |
 | **Modern UI/UX**          | Fast, responsive design built with Tailwind CSS, Radix UI, and Framer Motion|
+| **Creator Analytics**     | Owner-only analytics with wallet signature-challenge authentication (Issue #77) |
 
 ## Project Structure
 

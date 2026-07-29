@@ -90,6 +90,16 @@ export function Navbar() {
           <ThemeToggle />
 
           {address ? (
+            <Link
+              href="/dashboard"
+              aria-label="Open creator analytics dashboard"
+              className="text-xs font-medium text-foreground/80 hover:text-foreground px-2 py-1 rounded-md hover:bg-card inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+              Dashboard
+            </Link>
+          ) : null}
+          {address ? (
             <>
               <span
                 className="font-mono text-xs text-foreground/70 bg-card border border-card-border rounded-lg px-2 py-1"

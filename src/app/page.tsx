@@ -269,7 +269,10 @@ export default function Home() {
                         <Button
                           className="w-full font-bold"
                           variant="destructive"
-                          onClick={() => { setSelectedRefundCampaign(campaign); setRefundModalKey((k) => k + 1) }}
+                          onClick={() => {
+                            setSelectedRefundCampaign(campaign)
+                            setRefundModalKey((k) => k + 1)
+                          }}
                         >
                           Claim Refund
                         </Button>
