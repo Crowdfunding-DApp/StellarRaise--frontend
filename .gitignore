@@ -42,3 +42,6 @@ somzilla.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lighthouse ci results
+/.lighthouseci/

@@ -1,0 +1,101 @@
+name: Performance & Lighthouse CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+jobs:
+  lighthouse-ci:
+    runs-on: ubuntu-latest
+    name: Lighthouse CI
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm start &
+        env:
+          NODE_ENV: production
+
+      - name: Wait for application to be ready
+        run: npx wait-on http://localhost:3000 --timeout 120000
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: './lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Upload results as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results
+          path: .lighthouseci
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            try {
+              const resultsFile = './.lighthouseci/lhr/results-0-0.lhr.json';
+              if (!fs.existsSync(resultsFile)) {
+                console.log('Results file not found');
+                return;
+              }
+
+              const results = JSON.parse(fs.readFileSync(resultsFile, 'utf8'));
+              const scores = results.categories;
+
+              const scoreColor = (score) => {
+                if (score >= 90) return '🟢';
+                if (score >= 75) return '🟡';
+                return '🔴';
+              };
+
+              const comment = `## 📊 Lighthouse Performance Report
+
+              | Category | Score |
+              |----------|-------|
+              | Performance | ${scoreColor(scores.performance.score * 100)} ${Math.round(scores.performance.score * 100)}/100 |
+              | Accessibility | ${scoreColor(scores.accessibility.score * 100)} ${Math.round(scores.accessibility.score * 100)}/100 |
+              | Best Practices | ${scoreColor(scores['best-practices'].score * 100)} ${Math.round(scores['best-practices'].score * 100)}/100 |
+              | SEO | ${scoreColor(scores.seo.score * 100)} ${Math.round(scores.seo.score * 100)}/100 |
+
+              ### Core Web Vitals
+              - **LCP**: ${results.audits['largest-contentful-paint'].displayValue}
+              - **FID**: ${results.audits['first-input-delay']?.displayValue || 'N/A'}
+              - **CLS**: ${results.audits['cumulative-layout-shift'].displayValue}
+
+              [View full report](https://googlechrome.github.io/lighthouse/viewer/?jsonurl=${{ job.outputs.report_url }})
+              `;
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.error('Error posting comment:', error);
+            }
