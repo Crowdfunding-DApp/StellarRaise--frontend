@@ -228,6 +228,15 @@ export default function Home() {
               const isFailed =
                 !isFunded && new Date(campaign.deadline) < new Date()
 
+              // Owner not yet returned by the contract (see Campaign.owner) —
+              // fall back to treating the connected wallet as owner so the
+              // withdrawal flow is testable ahead of that contract support.
+              const isOwner = campaign.owner ? address === campaign.owner : !!address
+              const remainingBalance = getRemainingBalance(campaign)
+              const withdrawalState = getWithdrawalState(campaign)
+              const gracePeriodActive = isWithinGracePeriod(campaign)
+              const graceEndsAt = getGracePeriodEndsAt(campaign)
+
               return (
                 <li
                   key={campaign.id}
@@ -279,14 +288,56 @@ export default function Home() {
                         >
                           Claim Refund
                         </Button>
+                      ) : isFunded ? (
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-foreground/60">Withdrawal status</span>
+                            <span
+                              className={
+                                withdrawalState === "full"
+                                  ? "text-green-500 font-semibold"
+                                  : withdrawalState === "partial"
+                                  ? "text-primary font-semibold"
+                                  : "text-foreground/60 font-semibold"
+                              }
+                            >
+                              {withdrawalState === "full"
+                                ? "Fully withdrawn"
+                                : withdrawalState === "partial"
+                                ? `Partially withdrawn (${(campaign.withdrawnAmount ?? 0).toLocaleString()} of ${campaign.raised.toLocaleString()} XLM)`
+                                : "Not withdrawn"}
+                            </span>
+                          </div>
+
+                          {isOwner ? (
+                            <Button
+                              className="w-full font-bold"
+                              variant={withdrawalState === "full" ? "secondary" : "default"}
+                              disabled={withdrawalState === "full" || gracePeriodActive || remainingBalance <= 0}
+                              onClick={() => {
+                                setSelectedWithdrawCampaign(campaign)
+                                setWithdrawModalKey((k) => k + 1)
+                              }}
+                            >
+                              {withdrawalState === "full"
+                                ? "Fully Withdrawn"
+                                : gracePeriodActive
+                                ? `Withdrawal opens ${graceEndsAt ? new Date(graceEndsAt).toLocaleString() : "soon"}`
+                                : "Withdraw Funds"}
+                            </Button>
+                          ) : (
+                            <Button className="w-full font-bold" variant="secondary" disabled>
+                              Successfully Funded
+                            </Button>
+                          )}
+                        </div>
                       ) : (
                         <Button
                           className="w-full font-bold"
-                          variant={isFunded ? "secondary" : "default"}
-                          onClick={() => !isFunded && handlePledgeClick(campaign.title)}
-                          disabled={isFunded}
+                          variant="default"
+                          onClick={() => handlePledgeClick(campaign.title)}
                         >
-                          {isFunded ? "Successfully Funded" : "Pledge Now"}
+                          Pledge Now
                         </Button>
                       )}
 
