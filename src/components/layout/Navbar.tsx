@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/ThemeToggle"
-import { Wallet, Rocket, LogOut, Loader2, Menu, X } from "lucide-react"
+import { Wallet, Rocket, LogOut, Loader2, Menu, X, Shield } from "lucide-react"
 import { useWallet } from "@/context/WalletContext"
 
 export function Navbar() {
@@ -40,9 +40,16 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop: theme toggle + wallet controls */}
+        {/* Desktop: theme toggle + admin link + wallet controls */}
         <div className="hidden sm:flex items-center gap-3">
           <ThemeToggle />
+          <Link
+            href="/admin"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-foreground/50 hover:text-foreground hover:bg-card border border-transparent hover:border-card-border transition-all"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            Admin
+          </Link>
 
           {error && (
             <p role="alert" aria-live="polite" className="text-red-500 text-sm">

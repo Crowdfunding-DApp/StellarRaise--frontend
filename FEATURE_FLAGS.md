@@ -66,6 +66,8 @@ Best for: gradual rollouts, A/B testing, canary releases.
 |---------------------|---------------------|------------------------------|--------------------------------------------------------------|------------------------------------------------|
 | `indexer-migration` | `percentage-rollout`| `percentage: 10`             | Migrate contract-read calls from deprecated Soroban RPC      | Indexer endpoint stable, old RPC deprecated    |
 |                     |                     |                              | `simulateTransaction` flow to the new indexer endpoint.      |                                                |
+| `admin-console`     | `boolean`           | `enabled: true`              | Admin moderation console at `/admin` (Issue 70).             | Replaced by backend auth system                |
+|                     |                     |                              | Requires `NEXT_PUBLIC_ADMIN_SECRET` env var.                 |                                                |
 
 ---
 
