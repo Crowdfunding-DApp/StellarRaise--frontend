@@ -90,6 +90,8 @@ export function PledgeModal({
     onClose()
   }
 
+  const containerRef = useDialogA11y(isOpen, handleClose)
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -106,33 +108,39 @@ export function PledgeModal({
           {/* Modal content */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <motion.div
+              ref={containerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="pledge-modal-title"
+              tabIndex={-1}
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-md bg-card border border-card-border rounded-2xl shadow-2xl p-6 pointer-events-auto"
+              className="w-full max-w-md bg-card border border-card-border rounded-2xl shadow-2xl p-6 pointer-events-auto outline-none"
             >
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-foreground">Backing Project</h2>
+                <h2 id="pledge-modal-title" className="text-xl font-bold text-foreground">Backing Project</h2>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleClose}
                   disabled={txState === "processing"}
                   className="rounded-full"
+                  aria-label="Close pledge modal"
                 >
-                  <X className="w-5 h-5 text-foreground/60" />
+                  <X className="w-5 h-5 text-foreground/60" aria-hidden="true" />
                 </Button>
               </div>
 
               {txState === "success" ? (
-                <div className="flex flex-col items-center py-8 text-center">
+                <div role="status" className="flex flex-col items-center py-8 text-center">
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", bounce: 0.5 }}
                     className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mb-4"
                   >
-                    <CheckCircle2 className="w-8 h-8" />
+                    <CheckCircle2 className="w-8 h-8" aria-hidden="true" />
                   </motion.div>
                   <h3 className="text-2xl font-bold mb-2">Pledge Successful!</h3>
                   <p className="text-foreground/70">
@@ -140,13 +148,13 @@ export function PledgeModal({
                   </p>
                 </div>
               ) : txState === "error" ? (
-                <div className="flex flex-col items-center py-8 text-center">
+                <div role="alert" className="flex flex-col items-center py-8 text-center">
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-4"
                   >
-                    <AlertCircle className="w-8 h-8" />
+                    <AlertCircle className="w-8 h-8" aria-hidden="true" />
                   </motion.div>
                   <h3 className="text-2xl font-bold mb-2">Transaction Failed</h3>
                   <p className="text-foreground/70 mb-6">{errorMessage}</p>
@@ -176,9 +184,10 @@ export function PledgeModal({
                   </p>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Amount to Pledge (XLM)</label>
+                    <label htmlFor="pledge-amount" className="text-sm font-medium">Amount to Pledge (XLM)</label>
                     <div className="relative">
                       <input
+                        id="pledge-amount"
                         type="number"
                         value={pledgeAmount}
                         onChange={(e) => setPledgeAmount(e.target.value)}
@@ -200,7 +209,7 @@ export function PledgeModal({
                   >
                     {txState === "processing" ? (
                       <span className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                         Confirming in Wallet...
                       </span>
                     ) : !address ? (

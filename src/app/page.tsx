@@ -192,12 +192,12 @@ export default function Home() {
           </div>
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <h2 className="text-xl font-bold text-foreground mb-2">Failed to Load Campaigns</h2>
-            <p className="text-foreground/60 max-w-md mb-6">{error}</p>
+            <p role="alert" className="text-foreground/60 max-w-md mb-6">{error}</p>
             <Button
               variant="outline"
               onClick={() => {
@@ -221,7 +221,7 @@ export default function Home() {
         )}
 
         {!loading && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {campaigns.map((campaign) => {
               const progress = (campaign.raised / campaign.goal) * 100
               const isFunded = progress >= 100
@@ -229,7 +229,7 @@ export default function Home() {
                 !isFunded && new Date(campaign.deadline) < new Date()
 
               return (
-                <div
+                <li
                   key={campaign.id}
                   className="group flex flex-col bg-card border border-card-border rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 transform hover:-translate-y-1"
                 >
@@ -244,7 +244,7 @@ export default function Home() {
                       <CountdownTimer deadline={campaign.deadline} />
                     </div>
                     {isFailed && (
-                      <div className="absolute top-3 left-3 bg-red-500/90 text-white text-xs font-semibold px-2 py-1 rounded-lg">
+                      <div className="absolute top-3 left-3 bg-red-600/90 text-white text-xs font-semibold px-2 py-1 rounded-lg">
                         Failed
                       </div>
                     )}
@@ -259,10 +259,13 @@ export default function Home() {
                     <div className="space-y-4">
                       <div>
                         <div className="flex justify-between text-sm mb-2 font-medium">
-                          <span className="text-primary">{campaign.raised.toLocaleString()} XLM raised</span>
+                          <span className="text-primary-300">{campaign.raised.toLocaleString()} XLM raised</span>
                           <span className="text-foreground/60">{campaign.goal.toLocaleString()} XLM goal</span>
                         </div>
-                        <ProgressBar progress={progress} />
+                        <ProgressBar
+                          progress={progress}
+                          label={`${campaign.title}: ${Math.round(progress)}% funded, ${campaign.raised.toLocaleString()} of ${campaign.goal.toLocaleString()} XLM raised`}
+                        />
                       </div>
 
                       {isFailed ? (

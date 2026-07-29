@@ -36,9 +36,12 @@ export function CountdownTimer({ deadline }: CountdownTimerProps) {
   }, [deadline])
 
   return (
-    <div className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 bg-background/50 py-1.5 px-3 rounded-md border border-card-border/50 backdrop-blur-sm">
-      <Clock className="w-4 h-4 text-primary" />
-      <span>{timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m</span>
+    <div
+      className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 bg-background/50 py-1.5 px-3 rounded-md border border-card-border/50 backdrop-blur-sm"
+      aria-label={`Time remaining: ${timeLeft.days} days, ${timeLeft.hours} hours, ${timeLeft.minutes} minutes`}
+    >
+      <Clock className="w-4 h-4 text-primary" aria-hidden="true" />
+      <span aria-hidden="true">{timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m</span>
     </div>
   )
 }
