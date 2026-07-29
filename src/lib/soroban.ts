@@ -14,6 +14,12 @@ export interface Campaign {
   goal: number
   deadline: string
   image: string
+  /**
+   * The Soroban contract address (or escrow account) that receives pledge
+   * payments for this campaign. Used by the activity feed to query on-chain
+   * payment history via Horizon. May be undefined for legacy/mock data.
+   */
+  contractAddress?: string
 }
 
 function getRpcUrl(): string {
@@ -43,6 +49,8 @@ interface RawCampaign {
   goal: number
   deadline: number
   image: string
+  /** Contract address receiving pledges, if returned by the contract. */
+  contract_address?: string
 }
 
 /**
@@ -127,6 +135,7 @@ export async function getCampaigns(): Promise<Campaign[]> {
     goal: Number(raw.goal),
     deadline: new Date(Number(raw.deadline) * 1000).toISOString(),
     image: raw.image || "",
+    contractAddress: raw.contract_address,
   }))
 
   return campaigns
