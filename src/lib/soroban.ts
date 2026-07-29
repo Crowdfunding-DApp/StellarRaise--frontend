@@ -5,6 +5,7 @@ import {
   TransactionBuilder,
   BASE_FEE,
 } from "@stellar/stellar-sdk"
+import { isFlagEnabled } from "@/lib/feature-flags"
 
 export interface Campaign {
   id: string
@@ -14,6 +15,12 @@ export interface Campaign {
   goal: number
   deadline: string
   image: string
+  /**
+   * The Soroban contract address (or escrow account) that receives pledge
+   * payments for this campaign. Used by the activity feed to query on-chain
+   * payment history via Horizon. May be undefined for legacy/mock data.
+   */
+  contractAddress?: string
 }
 
 function getRpcUrl(): string {
@@ -43,6 +50,8 @@ interface RawCampaign {
   goal: number
   deadline: number
   image: string
+  /** Contract address receiving pledges, if returned by the contract. */
+  contract_address?: string
 }
 
 /**
@@ -73,9 +82,11 @@ class DummyAccount {
 
 /**
  * Fetches all campaigns from the deployed Soroban crowdfunding contract.
- * Uses the configured RPC URL and contract ID from environment variables.
+ *
+ * Uses the **legacy** `simulateTransaction` flow (deprecated RPC path).
+ * Kept for backward compatibility during the indexer-migration rollout.
  */
-export async function getCampaigns(): Promise<Campaign[]> {
+async function getCampaignsLegacy(): Promise<Campaign[]> {
   const rpcUrl = getRpcUrl()
   const contractId = getContractId()
 
@@ -127,7 +138,88 @@ export async function getCampaigns(): Promise<Campaign[]> {
     goal: Number(raw.goal),
     deadline: new Date(Number(raw.deadline) * 1000).toISOString(),
     image: raw.image || "",
+    contractAddress: raw.contract_address,
   }))
 
   return campaigns
 }
+
+/**
+ * Fetches all campaigns using the **new indexer** endpoint.
+ *
+ * This is the Issue-49 migration path. It calls a Soroban indexer
+ * endpoint (via NEXT_PUBLIC_INDEXER_URL) that returns pre-processed
+ * campaign data, avoiding the deprecated `simulateTransaction` flow.
+ *
+ * Exposed as a separate function so it can be A/B tested behind the
+ * "indexer-migration" feature flag.
+ */
+export async function getCampaignsFromIndexer(): Promise<Campaign[]> {
+  const indexerUrl = process.env.NEXT_PUBLIC_INDEXER_URL
+  if (!indexerUrl) {
+    throw new Error(
+      "NEXT_PUBLIC_INDEXER_URL is not defined. Set it to use the indexer-based campaign fetch."
+    )
+  }
+
+  const contractId = getContractId()
+
+  const response = await fetch(
+    `${indexerUrl}/contracts/${contractId}/campaigns`,
+    { headers: { Accept: "application/json" } }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      `Indexer responded with ${response.status}: ${response.statusText}. ` +
+      "Falling back to the legacy RPC path is recommended until the indexer is stable."
+    )
+  }
+
+  const rawCampaigns: RawCampaign[] = await response.json()
+
+  const campaigns: Campaign[] = rawCampaigns.map((raw, index) => ({
+    id: String(index + 1),
+    title: raw.title,
+    description: raw.description,
+    raised: Number(raw.raised),
+    goal: Number(raw.goal),
+    deadline: new Date(Number(raw.deadline) * 1000).toISOString(),
+    image: raw.image || "",
+  }))
+
+  return campaigns
+}
+
+/**
+ * Fetches all campaigns from the deployed Soroban crowdfunding contract.
+ *
+ * Automatically selects the data-fetching strategy based on the
+ * `indexer-migration` feature flag:
+ * - **Flag enabled:** uses the new indexer endpoint (Issue 49).
+ * - **Flag disabled:** uses the legacy `simulateTransaction` RPC path.
+ *
+ * @param walletAddress - Optional wallet address used for percentage-rollout
+ *                        bucketing so the same user sees a consistent path.
+ */
+export async function getCampaigns(
+  walletAddress?: string | null
+): Promise<Campaign[]> {
+  const useIndexer = isFlagEnabled("indexer-migration", walletAddress)
+
+  if (useIndexer) {
+    try {
+      return await getCampaignsFromIndexer()
+    } catch (err) {
+      // If the indexer path fails during rollout, degrade gracefully
+      // to the legacy path rather than breaking the page for the user.
+      console.warn(
+        "[FeatureFlag] indexer-migration: indexer fetch failed, falling back to legacy RPC.",
+        err
+      )
+    }
+  }
+
+  return getCampaignsLegacy()
+}
+

@@ -7,7 +7,9 @@ import { CountdownTimer } from "@/components/ui/CountdownTimer"
 import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
 import { RefundModal } from "@/components/ui/RefundModal"
+import { ActivityFeed } from "@/components/ui/ActivityFeed"
 import { getCampaigns, type Campaign } from "@/lib/soroban"
+import { ChevronDown, ChevronUp } from "lucide-react"
 
 function CampaignSkeleton() {
   return (
@@ -36,13 +38,30 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
   const [pledgeModalKey, setPledgeModalKey] = useState(0)
+  const [selectedRefundCampaign, setSelectedRefundCampaign] = useState<Campaign | null>(null)
+  const [refundModalKey, setRefundModalKey] = useState(0)
+  /** Campaign IDs with their activity feed currently expanded. */
+  const [expandedFeeds, setExpandedFeeds] = useState<Set<string>>(new Set())
+
+  const toggleFeed = (campaignId: string) => {
+    setExpandedFeeds((prev) => {
+      const next = new Set(prev)
+      if (next.has(campaignId)) {
+        next.delete(campaignId)
+      } else {
+        next.add(campaignId)
+      }
+      return next
+    })
+  }
 
   useEffect(() => {
     async function fetchCampaigns() {
       try {
         setLoading(true)
         setError(null)
-        const data = await getCampaigns()
+        // Pass the wallet address for consistent feature-flag bucketing
+        const data = await getCampaigns(walletAddress)
         setCampaigns(data)
       } catch (err) {
         const message =
@@ -56,7 +75,7 @@ export default function Home() {
     }
 
     fetchCampaigns()
-  }, [])
+  }, [walletAddress])
 
   const handlePledgeClick = (title: string) => {
     setSelectedCampaign(title)
@@ -187,8 +206,40 @@ export default function Home() {
                           {isFunded ? "Successfully Funded" : "Pledge Now"}
                         </Button>
                       )}
+
+                      {/* Activity feed toggle — only shown when a contract address is available */}
+                      {campaign.contractAddress && (
+                        <button
+                          onClick={() => toggleFeed(campaign.id)}
+                          className="flex items-center justify-center gap-1.5 w-full text-xs text-foreground/40 hover:text-foreground/70 transition-colors py-1"
+                          aria-expanded={expandedFeeds.has(campaign.id)}
+                          aria-controls={`feed-${campaign.id}`}
+                        >
+                          {expandedFeeds.has(campaign.id) ? (
+                            <>
+                              <ChevronUp className="w-3 h-3" />
+                              Hide activity
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="w-3 h-3" />
+                              Live activity
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
+
+                  {/* Collapsible activity feed panel */}
+                  {campaign.contractAddress && expandedFeeds.has(campaign.id) && (
+                    <div
+                      id={`feed-${campaign.id}`}
+                      className="border-t border-card-border px-4 pb-4 pt-3"
+                    >
+                      <ActivityFeed contractAddress={campaign.contractAddress} />
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -196,11 +247,44 @@ export default function Home() {
         )}
       </main>
 
+      {/* Feature-flag indicator — shows which data path is active.
+       *  Remove this badge once the indexer-migration is fully rolled out. */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg ${
+              indexerMigrationEnabled
+                ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                : "bg-gray-500/20 text-gray-400 border border-gray-500/30"
+            }`}
+            title={
+              indexerMigrationEnabled
+                ? "Using indexer endpoint (Issue 49)"
+                : "Using legacy RPC simulateTransaction"
+            }
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                indexerMigrationEnabled ? "bg-green-400" : "bg-gray-400"
+              }`}
+            />
+            {indexerMigrationEnabled ? "Indexer" : "Legacy RPC"}
+          </span>
+        </div>
+      )}
+
       <PledgeModal
         key={pledgeModalKey}
         isOpen={!!selectedCampaign}
         onClose={closePledgeModal}
         campaignTitle={selectedCampaign || ""}
+      />
+      <RefundModal
+        key={refundModalKey}
+        isOpen={!!selectedRefundCampaign}
+        onClose={closeRefundModal}
+        campaignTitle={selectedRefundCampaign?.title || ""}
+        pledgedAmount={undefined}
       />
     </div>
   )
