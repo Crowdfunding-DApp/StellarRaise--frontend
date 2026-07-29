@@ -7,7 +7,9 @@ import { CountdownTimer } from "@/components/ui/CountdownTimer"
 import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
 import { RefundModal } from "@/components/ui/RefundModal"
+import { ActivityFeed } from "@/components/ui/ActivityFeed"
 import { getCampaigns, type Campaign } from "@/lib/soroban"
+import { ChevronDown, ChevronUp } from "lucide-react"
 
 function CampaignSkeleton() {
   return (
@@ -38,6 +40,20 @@ export default function Home() {
   const [pledgeModalKey, setPledgeModalKey] = useState(0)
   const [selectedRefundCampaign, setSelectedRefundCampaign] = useState<Campaign | null>(null)
   const [refundModalKey, setRefundModalKey] = useState(0)
+  /** Campaign IDs with their activity feed currently expanded. */
+  const [expandedFeeds, setExpandedFeeds] = useState<Set<string>>(new Set())
+
+  const toggleFeed = (campaignId: string) => {
+    setExpandedFeeds((prev) => {
+      const next = new Set(prev)
+      if (next.has(campaignId)) {
+        next.delete(campaignId)
+      } else {
+        next.add(campaignId)
+      }
+      return next
+    })
+  }
 
   useEffect(() => {
     async function fetchCampaigns() {
@@ -189,8 +205,40 @@ export default function Home() {
                           {isFunded ? "Successfully Funded" : "Pledge Now"}
                         </Button>
                       )}
+
+                      {/* Activity feed toggle — only shown when a contract address is available */}
+                      {campaign.contractAddress && (
+                        <button
+                          onClick={() => toggleFeed(campaign.id)}
+                          className="flex items-center justify-center gap-1.5 w-full text-xs text-foreground/40 hover:text-foreground/70 transition-colors py-1"
+                          aria-expanded={expandedFeeds.has(campaign.id)}
+                          aria-controls={`feed-${campaign.id}`}
+                        >
+                          {expandedFeeds.has(campaign.id) ? (
+                            <>
+                              <ChevronUp className="w-3 h-3" />
+                              Hide activity
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="w-3 h-3" />
+                              Live activity
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
+
+                  {/* Collapsible activity feed panel */}
+                  {campaign.contractAddress && expandedFeeds.has(campaign.id) && (
+                    <div
+                      id={`feed-${campaign.id}`}
+                      className="border-t border-card-border px-4 pb-4 pt-3"
+                    >
+                      <ActivityFeed contractAddress={campaign.contractAddress} />
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -209,6 +257,7 @@ export default function Home() {
         isOpen={!!selectedRefundCampaign}
         onClose={closeRefundModal}
         campaignTitle={selectedRefundCampaign?.title || ""}
+        pledgedAmount={undefined}
       />
     </div>
   )
