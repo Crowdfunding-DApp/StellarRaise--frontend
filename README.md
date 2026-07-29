@@ -133,6 +133,43 @@ const handlePledge = async (amount: number) => {
 }
 ```
 
+## Performance Testing
+
+The StellarRaise frontend includes automated performance testing using [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) to ensure optimal user experience.
+
+### Performance Targets
+
+We maintain strict performance budgets to prevent regressions:
+
+| Metric | Target |
+|--------|--------|
+| **Lighthouse Performance** | ≥ 75 |
+| **Lighthouse Accessibility** | ≥ 90 |
+| **Lighthouse Best Practices** | ≥ 85 |
+| **Lighthouse SEO** | ≥ 90 |
+| **LCP (Largest Contentful Paint)** | < 2.5s |
+| **CLS (Cumulative Layout Shift)** | < 0.1 |
+
+### Running Performance Tests Locally
+
+```bash
+# Run a complete performance test
+npm run performance:test
+
+# Or run individual commands:
+npm run build && npm start
+
+# In another terminal:
+npm run lighthouse:audit
+npm run lighthouse:analyze
+```
+
+For detailed information, see [PERFORMANCE_TESTING.md](./PERFORMANCE_TESTING.md) and [PERFORMANCE_BUDGET.md](./PERFORMANCE_BUDGET.md).
+
+### CI/CD Integration
+
+Performance audits run automatically on every pull request. Failed performance checks will block merging until thresholds are met.
+
 ## Deployment
 
 Deploying the Interface to the open web is quick and straightforward thanks to Next.js portability.
