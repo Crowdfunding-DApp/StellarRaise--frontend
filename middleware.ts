@@ -11,6 +11,8 @@ export const config = {
   // Match all pathnames except:
   //   - Next.js internals (_next/*)
   //   - API routes (api/*)
+  //   - The admin console and creator dashboard (admin/*, dashboard/*) —
+  //     these live outside the [locale] segment and are not translated
   //   - Static files (files with extensions like .ico, .png, etc.)
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/((?!api|admin|dashboard|_next|_vercel|.*\\..*).*)"],
 }

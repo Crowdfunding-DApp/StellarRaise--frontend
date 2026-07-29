@@ -9,7 +9,10 @@
     "disconnect_label": "Disconnect wallet",
     "open_menu": "Open menu",
     "close_menu": "Close menu",
-    "mobile_menu_label": "Mobile navigation menu"
+    "mobile_menu_label": "Mobile navigation menu",
+    "admin_label": "Admin",
+    "dashboard_label": "Dashboard",
+    "dashboard_aria_label": "Open creator analytics dashboard"
   },
   "Home": {
     "hero_title": "Fund the Future on",
@@ -60,6 +63,7 @@
   "CountdownTimer": {
     "days": "{count}d",
     "hours": "{count}h",
-    "minutes": "{count}m"
+    "minutes": "{count}m",
+    "aria_label": "Time remaining: {days} days, {hours} hours, {minutes} minutes"
   }
 }

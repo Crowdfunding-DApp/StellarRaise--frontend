@@ -9,7 +9,10 @@
     "disconnect_label": "قطع الاتصال بالمحفظة",
     "open_menu": "فتح القائمة",
     "close_menu": "إغلاق القائمة",
-    "mobile_menu_label": "قائمة التنقل للجوال"
+    "mobile_menu_label": "قائمة التنقل للجوال",
+    "admin_label": "الإدارة",
+    "dashboard_label": "لوحة التحكم",
+    "dashboard_aria_label": "فتح لوحة تحليلات المنشئ"
   },
   "Home": {
     "hero_title": "موّل مستقبلك على",
@@ -60,6 +63,7 @@
   "CountdownTimer": {
     "days": "{count}ي",
     "hours": "{count}س",
-    "minutes": "{count}د"
+    "minutes": "{count}د",
+    "aria_label": "الوقت المتبقي: {days} أيام، {hours} ساعات، {minutes} دقائق"
   }
 }

@@ -29,12 +29,15 @@ export function CountdownTimer({ deadline }: CountdownTimerProps) {
   const { days, hours, minutes } = formatCountdownParts(msLeft, locale)
 
   return (
-    <div className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 bg-background/50 py-1.5 px-3 rounded-md border border-card-border/50 backdrop-blur-sm">
+    <div
+      className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 bg-background/50 py-1.5 px-3 rounded-md border border-card-border/50 backdrop-blur-sm"
+      aria-label={t("aria_label", { days, hours, minutes })}
+    >
       <Clock className="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
       {/* Wrap the countdown in an explicit LTR span so digit segments
           like "3d 2h 15m" always read left-to-right even in an RTL document.
           The overall component still participates in the RTL flow (icon on right). */}
-      <span dir="ltr" className="tabular-nums">
+      <span dir="ltr" className="tabular-nums" aria-hidden="true">
         {t("days", { count: days })}{" "}
         {t("hours", { count: hours })}{" "}
         {t("minutes", { count: minutes })}
