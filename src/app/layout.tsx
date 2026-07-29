@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import { WalletProvider } from "@/context/WalletContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { AdminProvider } from "@/context/AdminContext";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -48,7 +49,9 @@ export default function RootLayout({
       <body className={`${outfit.variable} antialiased font-sans`}>
         <ThemeProvider>
           <WalletProvider>
-            {children}
+            <AdminProvider>
+              {children}
+            </AdminProvider>
           </WalletProvider>
         </ThemeProvider>
       </body>

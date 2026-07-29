@@ -65,6 +65,16 @@ const FLAG_REGISTRY: Record<string, FlagDefinition> = {
     type: "percentage-rollout",
     percentage: 10,
   },
+
+  // ---- Issue 70: Admin Moderation Console ----
+  // Enables the admin console at /admin for reviewing, suspending, and
+  // annotating campaigns.  Requires NEXT_PUBLIC_ADMIN_SECRET to be set.
+  // Boolean flag so it can be toggled off entirely in production until
+  // a proper backend auth system is integrated.
+  "admin-console": {
+    type: "boolean",
+    enabled: true,
+  },
 } as const
 
 // ---------------------------------------------------------------------------
