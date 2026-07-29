@@ -203,7 +203,7 @@ export default function Home() {
               onClick={() => {
                 setLoading(true)
                 setError(null)
-                getCampaigns()
+                loadCampaigns()
                   .then(setCampaigns)
                   .catch((err) =>
                     setError(
