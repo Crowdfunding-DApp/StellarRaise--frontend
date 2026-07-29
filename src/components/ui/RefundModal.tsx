@@ -131,8 +131,8 @@ export function RefundModal({
                 <div className="flex flex-col gap-4">
                   {/* Campaign failed notice */}
                   <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                    <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />
-                    <p className="text-sm text-red-300">
+                    <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+                    <p className="text-sm text-red-700 dark:text-red-300">
                       This campaign did not reach its funding goal and has expired. You are
                       eligible to claim a full refund.
                     </p>

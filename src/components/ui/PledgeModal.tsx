@@ -5,20 +5,36 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useWallet } from "@/context/WalletContext"
+import { useKycGate } from "@/hooks/useKycGate"
+import { KycVerificationPanel } from "@/components/kyc/KycVerificationPanel"
+import type { KycConfig } from "@/lib/kyc/types"
 
 interface PledgeModalProps {
   isOpen: boolean
   onClose: () => void
   campaignTitle: string
+  /** Optional pledge-context hints for the KYC gate. Absent by default — the gate stays inert without them. */
+  jurisdiction?: string
+  campaignType?: string
+  /** Overrides for the KYC gate config (e.g. to enable it for this surface, or in tests). Off by default. */
+  kycConfig?: Partial<KycConfig>
 }
 
 type TxState = "idle" | "processing" | "success" | "error"
 
-export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps) {
+export function PledgeModal({
+  isOpen,
+  onClose,
+  campaignTitle,
+  jurisdiction,
+  campaignType,
+  kycConfig,
+}: PledgeModalProps) {
   const { address, connect } = useWallet()
   const [pledgeAmount, setPledgeAmount] = useState<string>("100")
   const [txState, setTxState] = useState<TxState>("idle")
   const [errorMessage, setErrorMessage] = useState<string>("")
+  const kyc = useKycGate({ config: kycConfig })
 
   const handlePledge = async () => {
     if (!address) {
@@ -29,6 +45,20 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
     if (!pledgeAmount || isNaN(Number(pledgeAmount)) || Number(pledgeAmount) <= 0) {
       setTxState("error")
       setErrorMessage("Please enter a valid amount.")
+      return
+    }
+
+    const decision = kyc.evaluate({
+      amount: Number(pledgeAmount),
+      currency: "XLM",
+      jurisdiction,
+      campaignType,
+      walletAddress: address,
+    })
+
+    if (decision.required && kyc.state !== "verified") {
+      // Gate engaged: render KycVerificationPanel instead of proceeding.
+      // No-op when the gate is disabled (the default) — decision.required is always false then.
       return
     }
 
@@ -56,6 +86,7 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
   const handleClose = () => {
     if (txState === "processing") return
     setTxState("idle")
+    kyc.reset()
     onClose()
   }
 
@@ -123,6 +154,21 @@ export function PledgeModal({ isOpen, onClose, campaignTitle }: PledgeModalProps
                     Try Again
                   </Button>
                 </div>
+              ) : kyc.state === "required" || kyc.state === "verifying" || kyc.state === "rejected" ? (
+                <KycVerificationPanel
+                  state={kyc.state}
+                  error={kyc.error}
+                  onStart={() =>
+                    address &&
+                    kyc.startVerification({
+                      amount: Number(pledgeAmount),
+                      currency: "XLM",
+                      jurisdiction,
+                      campaignType,
+                      walletAddress: address,
+                    })
+                  }
+                />
               ) : (
                 <div className="flex flex-col gap-4">
                   <p className="text-sm text-foreground/70">
