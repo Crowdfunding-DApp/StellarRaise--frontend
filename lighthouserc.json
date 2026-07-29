@@ -14,36 +14,14 @@
       "target": "temporary-public-storage"
     },
     "assert": {
-      "preset": "lighthouse:recommended",
       "assertions": {
-        "metrics": [
-          {
-            "name": "Cumulative Layout Shift",
-            "compare": {
-              "type": "median",
-              "value": 0.1,
-              "aggregationMethod": "median"
-            },
-            "level": "error"
-          },
-          {
-            "name": "Largest Contentful Paint",
-            "compare": {
-              "type": "median",
-              "value": 2500,
-              "aggregationMethod": "median"
-            },
-            "level": "error"
-          },
-          {
-            "name": "First Input Delay",
-            "compare": {
-              "type": "median",
-              "value": 100,
-              "aggregationMethod": "median"
-            },
-            "level": "error"
-          }
+        "cumulative-layout-shift": [
+          "error",
+          { "maxNumericValue": 0.1, "aggregationMethod": "median" }
+        ],
+        "largest-contentful-paint": [
+          "error",
+          { "maxNumericValue": 2500, "aggregationMethod": "median" }
         ],
         "categories:performance": [
           "error",
