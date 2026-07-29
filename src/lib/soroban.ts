@@ -21,6 +21,12 @@ export interface Campaign {
    * payment history via Horizon. May be undefined for legacy/mock data.
    */
   contractAddress?: string
+  /** Owner's Stellar address. Not yet returned by the deployed contract. */
+  owner?: string
+  /** ISO timestamp of when the campaign reached its goal, used to gate a dispute grace period (Issue 34). Not yet returned by the deployed contract. */
+  fundedAt?: string
+  /** Cumulative amount the owner has withdrawn so far. Not yet tracked on-chain. */
+  withdrawnAmount?: number
 }
 
 function getRpcUrl(): string {
@@ -52,6 +58,9 @@ interface RawCampaign {
   image: string
   /** Contract address receiving pledges, if returned by the contract. */
   contract_address?: string
+  owner?: string
+  fundedAt?: number
+  withdrawnAmount?: number
 }
 
 /**
@@ -139,6 +148,9 @@ async function getCampaignsLegacy(): Promise<Campaign[]> {
     deadline: new Date(Number(raw.deadline) * 1000).toISOString(),
     image: raw.image || "",
     contractAddress: raw.contract_address,
+    owner: raw.owner,
+    fundedAt: raw.fundedAt ? new Date(Number(raw.fundedAt) * 1000).toISOString() : undefined,
+    withdrawnAmount: raw.withdrawnAmount ? Number(raw.withdrawnAmount) : 0,
   }))
 
   return campaigns

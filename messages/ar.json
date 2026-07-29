@@ -1,0 +1,69 @@
+{
+  "Navbar": {
+    "logo_label": "الصفحة الرئيسية لـ Stellar Raise",
+    "brand": "ستيلر رايز",
+    "connect_wallet": "ربط المحفظة",
+    "connecting": "جارٍ الاتصال…",
+    "connecting_label": "جارٍ ربط المحفظة…",
+    "connected_label": "المحفظة المتصلة: {address}",
+    "disconnect_label": "قطع الاتصال بالمحفظة",
+    "open_menu": "فتح القائمة",
+    "close_menu": "إغلاق القائمة",
+    "mobile_menu_label": "قائمة التنقل للجوال",
+    "admin_label": "الإدارة",
+    "dashboard_label": "لوحة التحكم",
+    "dashboard_aria_label": "فتح لوحة تحليلات المنشئ"
+  },
+  "Home": {
+    "hero_title": "موّل مستقبلك على",
+    "hero_title_highlight": "ستيلر",
+    "hero_subtitle": "اكتشف المشاريع المبتكرة وادعمها من خلال معاملات سريعة وآمنة على شبكة ستيلر.",
+    "raised_label": "جُمع {amount} XLM",
+    "goal_label": "الهدف {amount} XLM",
+    "pledge_now": "تعهّد الآن",
+    "successfully_funded": "تم تمويله بنجاح",
+    "claim_refund": "استرداد المبلغ",
+    "failed_badge": "فشل",
+    "loading_error_title": "فشل تحميل الحملات",
+    "loading_error_retry": "حاول مرة أخرى",
+    "loading_error_fallback": "حدث خطأ غير متوقع. يرجى المحاولة لاحقاً."
+  },
+  "PledgeModal": {
+    "title": "دعم المشروع",
+    "pledging_to": "أنت تتعهد لصالح",
+    "amount_label": "المبلغ للتعهد (XLM)",
+    "amount_placeholder": "100",
+    "confirm_pledge": "تأكيد التعهد",
+    "connect_to_pledge": "ربط المحفظة للتعهد",
+    "confirming": "جارٍ التأكيد في المحفظة...",
+    "success_title": "تم التعهد بنجاح!",
+    "success_message": "لقد تعهدت بنجاح لصالح {campaign}.",
+    "error_title": "فشلت المعاملة",
+    "try_again": "حاول مرة أخرى",
+    "invalid_amount": "يرجى إدخال مبلغ صحيح."
+  },
+  "RefundModal": {
+    "title": "استرداد المبلغ",
+    "close_label": "إغلاق نافذة الاسترداد",
+    "failed_notice": "لم تصل هذه الحملة إلى هدفها التمويلي وانتهت مدتها. يحق لك المطالبة باسترداد كامل المبلغ.",
+    "campaign_label": "الحملة",
+    "refund_amount_label": "مبلغ الاسترداد",
+    "refund_amount_value": "{amount} XLM",
+    "wallet_description": "سيؤدي المتابعة إلى بدء معاملة استرداد عبر محفظتك المتصلة. سيُعاد XLM إلى",
+    "wallet_fallback": "محفظتك",
+    "claim_refund": "استرداد المبلغ",
+    "connect_to_claim": "ربط المحفظة للمطالبة",
+    "processing": "جارٍ معالجة الاسترداد…",
+    "success_title": "تم الاسترداد بنجاح!",
+    "success_message": "تم استرداد تعهدك لصالح {campaign} إلى محفظتك.",
+    "error_title": "فشل الاسترداد",
+    "try_again": "حاول مرة أخرى",
+    "error_fallback": "فشلت معاملة الاسترداد أو تم رفضها."
+  },
+  "CountdownTimer": {
+    "days": "{count}ي",
+    "hours": "{count}س",
+    "minutes": "{count}د",
+    "aria_label": "الوقت المتبقي: {days} أيام، {hours} ساعات، {minutes} دقائق"
+  }
+}

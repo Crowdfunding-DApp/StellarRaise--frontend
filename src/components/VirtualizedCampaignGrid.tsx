@@ -53,7 +53,7 @@ export function VirtualizedCampaignGrid({
   }, [campaigns.length, columnCount_, overscan, estimatedRowHeight])
 
   // Debounce scroll end detection
-  const scrollEndTimeoutRef = useRef<NodeJS.Timeout>()
+  const scrollEndTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const debouncedScrollEnd = useCallback(() => {
     if (scrollEndTimeoutRef.current) {
       clearTimeout(scrollEndTimeoutRef.current)

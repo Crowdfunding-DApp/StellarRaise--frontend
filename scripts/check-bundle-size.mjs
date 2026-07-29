@@ -17,10 +17,13 @@ const ROUTE = "/"
 
 // Raw (uncompressed) byte budget for the JS shipped on initial load of `/`.
 // Baseline after moving stellar-sdk behind a dynamic import: ~747 KB.
-// Budget leaves headroom for organic growth while still catching a
-// regression on the order of re-inlining stellar-sdk (~300 KB raw), which
-// would push this back toward the pre-fix ~1.05 MB.
-const BUDGET_BYTES = 850_000
+// Bumped after merging i18n routing, the withdrawal flow, and the KYC gate
+// (all legitimate feature additions) pushed the baseline to ~838 KB —
+// see docs/bundle-size.md. Budget leaves headroom for organic growth while
+// still catching a regression on the order of re-inlining stellar-sdk
+// (~300 KB raw) or the activity feed's Horizon client (~lazy-loaded, see
+// the `dynamic()` import in page.tsx).
+const BUDGET_BYTES = 900_000
 
 async function waitForServer(url, timeoutMs = 30_000) {
   const start = Date.now()

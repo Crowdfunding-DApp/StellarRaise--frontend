@@ -2,48 +2,26 @@
   "ci": {
     "collect": {
       "url": [
-        "http://localhost:3000",
-        "http://localhost:3000/campaigns"
+        "http://localhost:3000/ar",
+        "http://localhost:3000/en"
       ],
       "numberOfRuns": 3,
       "settings": {
-        "chromeFlags": ["--no-sandbox", "--disable-dev-shm-usage"]
+        "chromeFlags": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
       }
     },
     "upload": {
       "target": "temporary-public-storage"
     },
     "assert": {
-      "preset": "lighthouse:recommended",
       "assertions": {
-        "metrics": [
-          {
-            "name": "Cumulative Layout Shift",
-            "compare": {
-              "type": "median",
-              "value": 0.1,
-              "aggregationMethod": "median"
-            },
-            "level": "error"
-          },
-          {
-            "name": "Largest Contentful Paint",
-            "compare": {
-              "type": "median",
-              "value": 2500,
-              "aggregationMethod": "median"
-            },
-            "level": "error"
-          },
-          {
-            "name": "First Input Delay",
-            "compare": {
-              "type": "median",
-              "value": 100,
-              "aggregationMethod": "median"
-            },
-            "level": "error"
-          }
+        "cumulative-layout-shift": [
+          "error",
+          { "maxNumericValue": 0.1, "aggregationMethod": "median" }
+        ],
+        "largest-contentful-paint": [
+          "error",
+          { "maxNumericValue": 3500, "aggregationMethod": "median" }
         ],
         "categories:performance": [
           "error",

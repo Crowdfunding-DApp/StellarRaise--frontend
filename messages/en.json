@@ -1,0 +1,69 @@
+{
+  "Navbar": {
+    "logo_label": "Stellar Raise home",
+    "brand": "Stellar Raise",
+    "connect_wallet": "Connect Wallet",
+    "connecting": "Connecting…",
+    "connecting_label": "Connecting wallet…",
+    "connected_label": "Connected wallet: {address}",
+    "disconnect_label": "Disconnect wallet",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu",
+    "mobile_menu_label": "Mobile navigation menu",
+    "admin_label": "Admin",
+    "dashboard_label": "Dashboard",
+    "dashboard_aria_label": "Open creator analytics dashboard"
+  },
+  "Home": {
+    "hero_title": "Fund the Future on",
+    "hero_title_highlight": "Stellar",
+    "hero_subtitle": "Discover and support innovative projects with lightning-fast, secure transactions on the Stellar network.",
+    "raised_label": "{amount} XLM raised",
+    "goal_label": "{amount} XLM goal",
+    "pledge_now": "Pledge Now",
+    "successfully_funded": "Successfully Funded",
+    "claim_refund": "Claim Refund",
+    "failed_badge": "Failed",
+    "loading_error_title": "Failed to Load Campaigns",
+    "loading_error_retry": "Try Again",
+    "loading_error_fallback": "An unexpected error occurred. Please try again later."
+  },
+  "PledgeModal": {
+    "title": "Backing Project",
+    "pledging_to": "You are pledging to",
+    "amount_label": "Amount to Pledge (XLM)",
+    "amount_placeholder": "100",
+    "confirm_pledge": "Confirm Pledge",
+    "connect_to_pledge": "Connect Wallet to Pledge",
+    "confirming": "Confirming in Wallet...",
+    "success_title": "Pledge Successful!",
+    "success_message": "You have successfully pledged to {campaign}.",
+    "error_title": "Transaction Failed",
+    "try_again": "Try Again",
+    "invalid_amount": "Please enter a valid amount."
+  },
+  "RefundModal": {
+    "title": "Claim Refund",
+    "close_label": "Close refund modal",
+    "failed_notice": "This campaign did not reach its funding goal and has expired. You are eligible to claim a full refund.",
+    "campaign_label": "Campaign",
+    "refund_amount_label": "Refund amount",
+    "refund_amount_value": "{amount} XLM",
+    "wallet_description": "Proceeding will initiate a refund transaction via your connected wallet. The XLM will be returned to",
+    "wallet_fallback": "your wallet",
+    "claim_refund": "Claim Refund",
+    "connect_to_claim": "Connect Wallet to Claim",
+    "processing": "Processing Refund…",
+    "success_title": "Refund Successful!",
+    "success_message": "Your pledge to {campaign} has been refunded to your wallet.",
+    "error_title": "Refund Failed",
+    "try_again": "Try Again",
+    "error_fallback": "Refund transaction failed or was rejected."
+  },
+  "CountdownTimer": {
+    "days": "{count}d",
+    "hours": "{count}h",
+    "minutes": "{count}m",
+    "aria_label": "Time remaining: {days} days, {hours} hours, {minutes} minutes"
+  }
+}

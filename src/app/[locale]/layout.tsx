@@ -1,11 +1,14 @@
 import type { Metadata } from "next"
 import { Outfit } from "next/font/google"
-import { NextIntlClientProvider } from "next-intl"
 import { WalletProvider } from "@/context/WalletContext"
 import { ThemeProvider } from "@/context/ThemeContext"
 import { AdminProvider } from "@/context/AdminContext"
-import messages from "../../messages/en.json"
-import "./globals.css"
+import { NextIntlClientProvider } from "next-intl"
+import { getMessages } from "next-intl/server"
+import { isRtlLocale } from "@/lib/format"
+import { notFound } from "next/navigation"
+import { routing } from "@/i18n/routing"
+import "../globals.css"
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -14,7 +17,8 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: "Stellar Raise Interface",
-  description: "The Gateway for Users to browse active campaigns and contribute to projects.",
+  description:
+    "The Gateway for Users to browse active campaigns and contribute to projects.",
 }
 
 /**
@@ -36,27 +40,35 @@ const themeScript = `
 })();
 `.trim()
 
-// This root layout only ever renders for routes outside the [locale]
-// segment — the admin console and creator dashboard (admin/*, dashboard/*),
-// which are excluded from next-intl's middleware and stay English-only.
-// It still wraps children in NextIntlClientProvider (English messages) so
-// shared components like Navbar that call useTranslations() work here too.
-// Localized routes get their own <html>/<body> and provider stack from
-// src/app/[locale]/layout.tsx.
-export default function RootLayout({
-  children,
-}: {
+interface LocaleLayoutProps {
   children: React.ReactNode
-}) {
+  params: Promise<{ locale: string }>
+}
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: LocaleLayoutProps) {
+  const { locale } = await params
+
+  // Validate locale — return 404 for unknown locale segments
+  if (!routing.locales.includes(locale as "en" | "ar")) {
+    notFound()
+  }
+
+  // Load messages for this locale on the server
+  const messages = await getMessages()
+  const dir = isRtlLocale(locale) ? "rtl" : "ltr"
+
   return (
     // No className here — the FOUC script sets/clears "dark" before paint
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <head>
         {/* FOUC prevention: runs synchronously before any paint */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${outfit.variable} antialiased font-sans`}>
-        <NextIntlClientProvider locale="en" messages={messages}>
+        <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             <WalletProvider>
               <AdminProvider>{children}</AdminProvider>

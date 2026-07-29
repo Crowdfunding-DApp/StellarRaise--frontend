@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X, CheckCircle2, AlertCircle, Loader2, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useWallet } from "@/context/WalletContext"
+import { useTranslations, useLocale } from "next-intl"
+import { formatXlm } from "@/lib/format"
 import { useDialogA11y } from "@/lib/useDialogA11y"
 
 interface RefundModalProps {
@@ -23,6 +25,8 @@ export function RefundModal({
   pledgedAmount,
 }: RefundModalProps) {
   const { address, connect } = useWallet()
+  const t = useTranslations("RefundModal")
+  const locale = useLocale()
   const [txState, setTxState] = useState<TxState>("idle")
   const [errorMessage, setErrorMessage] = useState<string>("")
 
@@ -37,9 +41,7 @@ export function RefundModal({
     try {
       // Simulate Freighter transaction signing for refund
       await new Promise((resolve) => setTimeout(resolve, 2500))
-
       setTxState("success")
-
       setTimeout(() => {
         setTxState("idle")
         onClose()
@@ -47,7 +49,7 @@ export function RefundModal({
     } catch (err) {
       setTxState("error")
       const message = err instanceof Error ? err.message : String(err)
-      setErrorMessage(message || "Refund transaction failed or was rejected.")
+      setErrorMessage(message || t("error_fallback"))
     }
   }
 
@@ -85,15 +87,16 @@ export function RefundModal({
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="w-full max-w-md bg-card border border-card-border rounded-2xl shadow-2xl p-6 pointer-events-auto outline-none"
             >
+              {/* Header: justify-between is RTL-safe */}
               <div className="flex justify-between items-center mb-6">
-                <h2 id="refund-modal-title" className="text-xl font-bold text-foreground">Claim Refund</h2>
+                <h2 id="refund-modal-title" className="text-xl font-bold text-foreground">{t("title")}</h2>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleClose}
                   disabled={txState === "processing"}
                   className="rounded-full"
-                  aria-label="Close refund modal"
+                  aria-label={t("close_label")}
                 >
                   <X className="w-5 h-5 text-foreground/60" aria-hidden="true" />
                 </Button>
@@ -109,11 +112,9 @@ export function RefundModal({
                   >
                     <CheckCircle2 className="w-8 h-8" aria-hidden="true" />
                   </motion.div>
-                  <h3 className="text-2xl font-bold mb-2">Refund Successful!</h3>
+                  <h3 className="text-2xl font-bold mb-2">{t("success_title")}</h3>
                   <p className="text-foreground/70">
-                    Your pledge to{" "}
-                    <span className="font-semibold text-foreground">{campaignTitle}</span>{" "}
-                    has been refunded to your wallet.
+                    {t("success_message", { campaign: campaignTitle })}
                   </p>
                 </div>
               ) : txState === "error" ? (
@@ -125,53 +126,52 @@ export function RefundModal({
                   >
                     <AlertCircle className="w-8 h-8" aria-hidden="true" />
                   </motion.div>
-                  <h3 className="text-2xl font-bold mb-2">Refund Failed</h3>
+                  <h3 className="text-2xl font-bold mb-2">{t("error_title")}</h3>
                   <p className="text-foreground/70 mb-6">{errorMessage}</p>
                   <Button
                     variant="outline"
                     onClick={() => setTxState("idle")}
                     className="w-full"
                   >
-                    Try Again
+                    {t("try_again")}
                   </Button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
-                  {/* Campaign failed notice */}
+                  {/* Campaign failed notice — icon aligned to inline-start for RTL */}
                   <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                    <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
-                    <p className="text-sm text-red-700 dark:text-red-300">
-                      This campaign did not reach its funding goal and has expired. You are
-                      eligible to claim a full refund.
-                    </p>
+                    <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" aria-hidden="true" />
+                    <p className="text-sm text-red-700 dark:text-red-300">{t("failed_notice")}</p>
                   </div>
 
                   <div className="bg-background/50 border border-card-border rounded-xl px-4 py-3 space-y-2">
+                    {/* justify-between flips correctly in RTL */}
                     <div className="flex justify-between text-sm">
-                      <span className="text-foreground/60">Campaign</span>
-                      <span className="font-semibold text-foreground text-right line-clamp-1 max-w-[60%]">
+                      <span className="text-foreground/60">{t("campaign_label")}</span>
+                      <span className="font-semibold text-foreground text-end line-clamp-1 max-w-[60%]">
                         {campaignTitle}
                       </span>
                     </div>
                     {pledgedAmount !== undefined && pledgedAmount > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-foreground/60">Refund amount</span>
-                        <span className="font-semibold text-primary-300">
-                          {pledgedAmount.toLocaleString()} XLM
+                        <span className="text-foreground/60">{t("refund_amount_label")}</span>
+                        <span className="font-semibold text-primary">
+                          {t("refund_amount_value", {
+                            amount: formatXlm(pledgedAmount, locale),
+                          })}
                         </span>
                       </div>
                     )}
                   </div>
 
                   <p className="text-sm text-foreground/60">
-                    Proceeding will initiate a refund transaction via your connected wallet.
-                    The XLM will be returned to{" "}
+                    {t("wallet_description")}{" "}
                     {address ? (
-                      <span className="font-mono text-foreground/80">
+                      <span className="font-mono text-foreground/80" dir="ltr">
                         {address.substring(0, 5)}...{address.substring(address.length - 4)}
                       </span>
                     ) : (
-                      "your wallet"
+                      t("wallet_fallback")
                     )}
                     .
                   </p>
@@ -185,14 +185,14 @@ export function RefundModal({
                     {txState === "processing" ? (
                       <span className="flex items-center gap-2">
                         <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-                        Processing Refund…
+                        {t("processing")}
                       </span>
                     ) : !address ? (
-                      "Connect Wallet to Claim"
+                      t("connect_to_claim")
                     ) : (
                       <span className="flex items-center gap-2">
                         <RotateCcw className="w-5 h-5" aria-hidden="true" />
-                        Claim Refund
+                        {t("claim_refund")}
                       </span>
                     )}
                   </Button>
