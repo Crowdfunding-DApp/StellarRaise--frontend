@@ -178,4 +178,3 @@ export function getAllFlagStates(
   }
   return states
 }
-
