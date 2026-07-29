@@ -13,13 +13,13 @@ The Stellar Raise Interface lets backers discover and support innovative project
 
 ### Key Features
 
-| Feature                       | Description                                                                 |
-| :---------------------------- | :-------------------------------------------------------------------------- |
-| **Freighter Integration**    | Seamless authentication, connection, and transaction signing via Freighter|
-| **Campaign Dashboard**        | View live projects with progress bars, countdown timers, and goal tracking |
-| **Pledge Interface**          | Intuitive modal UI to safely pledge XLM or custom assets to campaigns      |
-| **Notification Infrastructure** | Opt-in email + extensible channel layer for campaign lifecycle events   |
-| **Modern UI/UX**              | Fast, responsive design built with Tailwind CSS, Radix UI, and Framer Motion|
+| Feature                   | Description                                                                 |
+| :------------------------ | :-------------------------------------------------------------------------- |
+| **Freighter Integration** | Seamless authentication, connection, and transaction signing via Freighter  |
+| **Campaign Dashboard**    | View live projects with progress bars, countdown timers, and goal tracking  |
+| **Pledge Interface**      | Intuitive modal UI to safely pledge XLM or custom assets to campaigns       |
+| **Modern UI/UX**          | Fast, responsive design built with Tailwind CSS, Radix UI, and Framer Motion|
+| **Creator Analytics**     | Owner-only analytics with wallet signature-challenge authentication (Issue #77) |
 
 ## Project Structure
 
@@ -299,6 +299,43 @@ const handlePledge = async (amount: number) => {
   }
 }
 ```
+
+## Performance Testing
+
+The StellarRaise frontend includes automated performance testing using [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) to ensure optimal user experience.
+
+### Performance Targets
+
+We maintain strict performance budgets to prevent regressions:
+
+| Metric | Target |
+|--------|--------|
+| **Lighthouse Performance** | ≥ 75 |
+| **Lighthouse Accessibility** | ≥ 90 |
+| **Lighthouse Best Practices** | ≥ 85 |
+| **Lighthouse SEO** | ≥ 90 |
+| **LCP (Largest Contentful Paint)** | < 2.5s |
+| **CLS (Cumulative Layout Shift)** | < 0.1 |
+
+### Running Performance Tests Locally
+
+```bash
+# Run a complete performance test
+npm run performance:test
+
+# Or run individual commands:
+npm run build && npm start
+
+# In another terminal:
+npm run lighthouse:audit
+npm run lighthouse:analyze
+```
+
+For detailed information, see [PERFORMANCE_TESTING.md](./PERFORMANCE_TESTING.md) and [PERFORMANCE_BUDGET.md](./PERFORMANCE_BUDGET.md).
+
+### CI/CD Integration
+
+Performance audits run automatically on every pull request. Failed performance checks will block merging until thresholds are met.
 
 ## Deployment
 

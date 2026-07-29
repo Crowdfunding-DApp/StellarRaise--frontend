@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { Wallet, Rocket, LogOut, Loader2, Menu, X } from "lucide-react"
 import { useWallet } from "@/context/WalletContext"
 
@@ -39,10 +40,12 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop wallet controls */}
-        <div className="hidden sm:flex items-center gap-4">
+        {/* Desktop: theme toggle + wallet controls */}
+        <div className="hidden sm:flex items-center gap-3">
+          <ThemeToggle />
+
           {error && (
-            <p role="alert" aria-live="polite" className="text-red-400 text-sm">
+            <p role="alert" aria-live="polite" className="text-red-500 text-sm">
               {error}
             </p>
           )}
@@ -82,8 +85,20 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile: compact wallet + hamburger */}
-        <div className="flex sm:hidden items-center gap-2">
+        {/* Mobile: theme toggle + compact wallet + hamburger */}
+        <div className="flex sm:hidden items-center gap-1">
+          <ThemeToggle />
+
+          {address ? (
+            <Link
+              href="/dashboard"
+              aria-label="Open creator analytics dashboard"
+              className="text-xs font-medium text-foreground/80 hover:text-foreground px-2 py-1 rounded-md hover:bg-card inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+              Dashboard
+            </Link>
+          ) : null}
           {address ? (
             <>
               <span
@@ -102,22 +117,20 @@ export function Navbar() {
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileMenuOpen((prev) => !prev)}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={mobileMenuOpen}
-                aria-controls="mobile-menu"
-              >
-                {mobileMenuOpen ? (
-                  <X className="w-5 h-5" aria-hidden="true" />
-                ) : (
-                  <Menu className="w-5 h-5" aria-hidden="true" />
-                )}
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" aria-hidden="true" />
+              ) : (
+                <Menu className="w-5 h-5" aria-hidden="true" />
+              )}
+            </Button>
           )}
         </div>
       </div>
@@ -131,7 +144,7 @@ export function Navbar() {
           className="sm:hidden border-t border-card-border bg-background/95 backdrop-blur-md px-4 py-4 flex flex-col gap-3"
         >
           {error && (
-            <p role="alert" aria-live="polite" className="text-red-400 text-sm text-center">
+            <p role="alert" aria-live="polite" className="text-red-500 text-sm text-center">
               {error}
             </p>
           )}
