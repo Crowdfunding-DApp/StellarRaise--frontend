@@ -38,4 +38,8 @@ jobs:
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The release commit's body/footer (full changelog notes with commit
+          # links) routinely exceeds commitlint's line-length rules; skip
+          # husky's commit-msg hook for this machine-generated commit only.
+          HUSKY: 0
         run: npx semantic-release
