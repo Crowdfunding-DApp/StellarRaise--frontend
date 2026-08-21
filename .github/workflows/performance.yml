@@ -38,7 +38,11 @@ jobs:
         uses: treosh/lighthouse-ci-action@v10
         with:
           configPath: './lighthouserc.json'
-          uploadArtifacts: true
+          # The action's own artifact upload hits a deprecated GitHub
+          # Artifacts API and fails outright regardless of the assertion
+          # result. The "Upload results as artifact" step below already
+          # covers this via actions/upload-artifact@v4.
+          uploadArtifacts: false
           temporaryPublicStorage: true
 
       - name: Upload results as artifact
