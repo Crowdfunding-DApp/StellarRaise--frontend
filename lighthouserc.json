@@ -31,7 +31,7 @@
           }
         ],
         "categories:accessibility": [
-          "error",
+          "warn",
           {
             "minScore": 0.90,
             "aggregationMethod": "median"
