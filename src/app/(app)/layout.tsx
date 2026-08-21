@@ -4,8 +4,8 @@ import { NextIntlClientProvider } from "next-intl"
 import { WalletProvider } from "@/context/WalletContext"
 import { ThemeProvider } from "@/context/ThemeContext"
 import { AdminProvider } from "@/context/AdminContext"
-import messages from "../../messages/en.json"
-import "./globals.css"
+import messages from "../../../messages/en.json"
+import "../globals.css"
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -36,13 +36,13 @@ const themeScript = `
 })();
 `.trim()
 
-// This root layout only ever renders for routes outside the [locale]
-// segment — the admin console and creator dashboard (admin/*, dashboard/*),
-// which are excluded from next-intl's middleware and stay English-only.
+// This is the root layout for the (app) route group: the admin console and
+// creator dashboard (admin/*, dashboard/*), which are excluded from
+// next-intl's middleware and stay English-only. It's a sibling root to
+// src/app/[locale]/layout.tsx, not an ancestor of it — route groups let both
+// define their own <html>/<body> without nesting one inside the other.
 // It still wraps children in NextIntlClientProvider (English messages) so
 // shared components like Navbar that call useTranslations() work here too.
-// Localized routes get their own <html>/<body> and provider stack from
-// src/app/[locale]/layout.tsx.
 export default function RootLayout({
   children,
 }: {
