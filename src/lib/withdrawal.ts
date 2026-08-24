@@ -1,4 +1,5 @@
 import type { Campaign } from "@/lib/soroban"
+import { isFlagEnabled } from "@/lib/feature-flags"
 
 export type WithdrawalState = "none" | "partial" | "full"
 
@@ -50,14 +51,47 @@ export function getMaxSingleWithdrawal(campaign: Campaign): number {
  * period even applies, so we conservatively treat it as already elapsed
  * (Issue 34 should supply a real timestamp and dispute status here).
  */
-export function isWithinGracePeriod(campaign: Campaign): boolean {
+export function isWithinGracePeriod(campaign: Pick<Campaign, "fundedAt">): boolean {
   if (!campaign.fundedAt) return false
   const fundedAtMs = new Date(campaign.fundedAt).getTime()
   return Date.now() - fundedAtMs < GRACE_PERIOD_MS
 }
 
-export function getGracePeriodEndsAt(campaign: Campaign): string | null {
+export function getGracePeriodEndsAt(campaign: Pick<Campaign, "fundedAt">): string | null {
   if (!campaign.fundedAt) return null
   const fundedAtMs = new Date(campaign.fundedAt).getTime()
   return new Date(fundedAtMs + GRACE_PERIOD_MS).toISOString()
+}
+
+/** Feature flag gating the mocked `fundedAt` injected by withMockFundedAt below. */
+export const GRACE_PERIOD_MOCK_FLAG = "grace-period-countdown-mock"
+
+const MOCK_GRACE_SESSION_START_MS = Date.now()
+
+/**
+ * Deterministic hash of a string into [0, rangeMs). Used to spread mocked
+ * fundedAt offsets across the grace window by campaign id, so some cards
+ * render active and others elapsed instead of all landing on the same state.
+ */
+function hashOffsetMs(seed: string, rangeMs: number): number {
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) & 0xffffffff
+  }
+  return Math.abs(hash) % rangeMs
+}
+
+/**
+ * Injects a deterministic mock `fundedAt` for funded campaigns that don't
+ * yet have a contract-tracked one, gated behind GRACE_PERIOD_MOCK_FLAG
+ * (Issue 34), so the grace-period UI can be built and reviewed against
+ * realistic data before the contract actually returns fundedAt. No-op
+ * when the flag is off or a real fundedAt is already present.
+ */
+export function withMockFundedAt(campaign: Campaign, seed?: string | null): Campaign {
+  if (campaign.fundedAt) return campaign
+  if (!isFlagEnabled(GRACE_PERIOD_MOCK_FLAG, seed)) return campaign
+  const offsetMs = hashOffsetMs(campaign.id, GRACE_PERIOD_MS)
+  const fundedAt = new Date(MOCK_GRACE_SESSION_START_MS - offsetMs).toISOString()
+  return { ...campaign, fundedAt }
 }

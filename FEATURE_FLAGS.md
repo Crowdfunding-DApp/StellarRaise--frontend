@@ -68,6 +68,9 @@ Best for: gradual rollouts, A/B testing, canary releases.
 |                     |                     |                              | `simulateTransaction` flow to the new indexer endpoint.      |                                                |
 | `admin-console`     | `boolean`           | `enabled: true`              | Admin moderation console at `/admin` (Issue 70).             | Replaced by backend auth system                |
 |                     |                     |                              | Requires `NEXT_PUBLIC_ADMIN_SECRET` env var.                 |                                                |
+| `grace-period-countdown-mock` | `boolean` | `enabled: false`             | Injects a deterministic mock `fundedAt` for funded campaigns | Contract returns a real fundedAt               |
+|                     |                     |                              | so the withdrawal grace-period countdown (Issue 34) can be   |                                                |
+|                     |                     |                              | built/reviewed. Dev/review aid only.                         |                                                |
 
 ---
 
