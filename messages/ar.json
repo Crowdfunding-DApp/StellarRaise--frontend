@@ -65,5 +65,12 @@
     "hours": "{count}س",
     "minutes": "{count}د",
     "aria_label": "الوقت المتبقي: {days} أيام، {hours} ساعات، {minutes} دقائق"
+  },
+  "GracePeriodCountdown": {
+    "days": "{count}ي",
+    "hours": "{count}س",
+    "minutes": "{count}د",
+    "opens_in": "يفتح السحب خلال {days} {hours} {minutes}",
+    "aria_label": "يفتح السحب خلال {days} أيام، {hours} ساعات، {minutes} دقائق"
   }
 }

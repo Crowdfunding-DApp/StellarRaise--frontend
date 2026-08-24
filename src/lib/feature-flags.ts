@@ -75,6 +75,17 @@ const FLAG_REGISTRY: Record<string, FlagDefinition> = {
     type: "boolean",
     enabled: true,
   },
+
+  // ---- Issue 34: Grace Period Countdown ----
+  // Injects a deterministic mock `fundedAt` for funded campaigns that don't
+  // yet have a contract-tracked one, so the withdrawal grace-period
+  // countdown UI can be built and reviewed before the contract returns a
+  // real fundedAt. Dev/review aid only — must stay off wherever real
+  // contract data is read.
+  "grace-period-countdown-mock": {
+    type: "boolean",
+    enabled: false,
+  },
 } as const
 
 // ---------------------------------------------------------------------------

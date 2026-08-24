@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "next-intl"
 import { Navbar } from "@/components/layout/Navbar"
 import { ProgressBar } from "@/components/ui/ProgressBar"
 import { CountdownTimer } from "@/components/ui/CountdownTimer"
+import { GracePeriodCountdown } from "@/components/ui/GracePeriodCountdown"
 import { Button } from "@/components/ui/button"
 import { PledgeModal } from "@/components/ui/PledgeModal"
 import { RefundModal } from "@/components/ui/RefundModal"
@@ -17,8 +18,7 @@ import { useFeatureFlag } from "@/hooks/useFeatureFlag"
 import {
   getRemainingBalance,
   getWithdrawalState,
-  isWithinGracePeriod,
-  getGracePeriodEndsAt,
+  withMockFundedAt,
 } from "@/lib/withdrawal"
 import { formatXlm } from "@/lib/format"
 import { ChevronDown, ChevronUp } from "lucide-react"
@@ -153,8 +153,7 @@ export default function Home() {
     const isOwner = campaign.owner ? address === campaign.owner : !!address
     const remainingBalance = getRemainingBalance(campaign)
     const withdrawalState = getWithdrawalState(campaign)
-    const gracePeriodActive = isWithinGracePeriod(campaign)
-    const graceEndsAt = getGracePeriodEndsAt(campaign)
+    const effectiveCampaign = withMockFundedAt(campaign, address)
 
     return (
       <div className="group flex flex-col bg-card border border-card-border rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 transform hover:-translate-y-1">
@@ -230,21 +229,20 @@ export default function Home() {
                 </div>
 
                 {isOwner ? (
-                  <Button
-                    className="w-full font-bold"
-                    variant={withdrawalState === "full" ? "secondary" : "default"}
-                    disabled={withdrawalState === "full" || gracePeriodActive || remainingBalance <= 0}
-                    onClick={() => {
-                      setSelectedWithdrawCampaign(campaign)
-                      setWithdrawModalKey((k) => k + 1)
-                    }}
-                  >
-                    {withdrawalState === "full"
-                      ? "Fully Withdrawn"
-                      : gracePeriodActive
-                      ? `Withdrawal opens ${graceEndsAt ? new Date(graceEndsAt).toLocaleString() : "soon"}`
-                      : "Withdraw Funds"}
-                  </Button>
+                  withdrawalState === "full" ? (
+                    <Button className="w-full font-bold" variant="secondary" disabled>
+                      Fully Withdrawn
+                    </Button>
+                  ) : (
+                    <GracePeriodCountdown
+                      campaign={effectiveCampaign}
+                      remainingBalance={remainingBalance}
+                      onWithdraw={() => {
+                        setSelectedWithdrawCampaign(campaign)
+                        setWithdrawModalKey((k) => k + 1)
+                      }}
+                    />
+                  )
                 ) : (
                   <Button className="w-full font-bold" variant="secondary" disabled>
                     {t("successfully_funded")}

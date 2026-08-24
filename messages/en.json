@@ -65,5 +65,12 @@
     "hours": "{count}h",
     "minutes": "{count}m",
     "aria_label": "Time remaining: {days} days, {hours} hours, {minutes} minutes"
+  },
+  "GracePeriodCountdown": {
+    "days": "{count}d",
+    "hours": "{count}h",
+    "minutes": "{count}m",
+    "opens_in": "Opens in {days} {hours} {minutes}",
+    "aria_label": "Withdrawal opens in {days} days, {hours} hours, {minutes} minutes"
   }
 }
