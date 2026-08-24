@@ -3,6 +3,13 @@
 All notable changes to **StellarRaise Frontend** will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/) and [Conventional Commits](https://www.conventionalcommits.org/).
 
+# [1.1.0](https://github.com/Crowdfunding-DApp/StellarRaise--frontend/compare/v1.0.0...v1.1.0) (2026-08-24)
+
+
+### Features
+
+* add live grace-period countdown to withdrawal flow ([4f29e75](https://github.com/Crowdfunding-DApp/StellarRaise--frontend/commit/4f29e75b6a3cde23bd55c91c7ee8ab8be52a9ce3))
+
 # 1.0.0 (2026-08-21)
 
 
